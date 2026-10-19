@@ -1,0 +1,1334 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Away">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#F6F3EC" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1C1B19" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<title>Away</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F6F3EC; --surface:#FFFDF8; --ink:#23272B; --muted:#716B61; --line:#E3DCCD;
+  --c:#2E6A68; --j:#C2536A; --hol:#B8862B; --we:#EFEAE0;
+  --ok:#3C7A4E; --warn:#B07A1E; --bad:#B3402F;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#1C1B19; --surface:#262522; --ink:#EEE8DC; --muted:#A49E91; --line:#3B3934;
+    --c:#72B5AF; --j:#E68C9E; --hol:#D9AE5C; --we:#2B2A27;
+    --ok:#7CC08D; --warn:#E0B055; --bad:#EE8A79;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1C1B19; --surface:#262522; --ink:#EEE8DC; --muted:#A49E91; --line:#3B3934;
+  --c:#72B5AF; --j:#E68C9E; --hol:#D9AE5C; --we:#2B2A27;
+  --ok:#7CC08D; --warn:#E0B055; --bad:#EE8A79;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.wrap{max-width:980px;margin:0 auto;padding:20px 18px 120px}
+
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+h1{font-family:"Fraunces",Georgia,serif;font-weight:400;font-size:clamp(2.1rem,7vw,3.2rem);line-height:1;margin:0;letter-spacing:-.01em}
+.logo{width:.85em;height:.85em;border-radius:22%;vertical-align:-.06em;margin-right:.28em}
+.bakbtns{display:flex;gap:8px;flex-wrap:wrap}
+.bakfile{position:relative;display:inline-flex;align-items:center;cursor:pointer}
+.bakfile input{position:absolute;opacity:0;width:1px;height:1px}
+.headtools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.yearnav{display:flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--surface)}
+.yearnav button{border:0;background:none;width:34px;height:34px;border-radius:50%;font-size:1.1rem;color:var(--muted)}
+.yearnav button:hover{background:var(--we);color:var(--ink)}
+.yearnav span{font-family:"Fraunces",Georgia,serif;font-size:1.15rem;min-width:3.2em;text-align:center}
+.iconbtn{border:1px solid var(--line);background:var(--surface);border-radius:999px;height:42px;padding:0 14px;display:inline-flex;align-items:center;gap:6px;color:var(--muted)}
+.iconbtn:hover{color:var(--ink)}
+.lede{color:var(--muted);margin:10px 0 22px;min-height:1.5em}
+.lede strong{color:var(--ink);font-weight:500}
+
+.people{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px}
+.person{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px 16px 14px;position:relative;overflow:hidden}
+.person::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--pc)}
+.person .name{font-weight:600}
+.person .big{font-family:"Fraunces",Georgia,serif;font-size:clamp(2.8rem,12vw,4.2rem);line-height:1;margin:10px 0 2px;color:var(--pc);font-variant-numeric:lining-nums}
+.person .big.neg{color:var(--bad)}
+.person .sub{color:var(--muted);font-size:.92rem}
+.person .small{font-size:.8rem}
+.bar{height:8px;border-radius:99px;background:var(--we);margin:12px 0 8px;display:flex;overflow:hidden}
+.bar i{display:block;height:100%}
+.bar .ok{background:var(--pc)}
+.bar .pl{background:var(--pc);opacity:.35}
+.legend{font-size:.82rem;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap}
+.legend b{font-weight:600;color:var(--ink)}
+.sickline{margin-top:8px;padding-top:8px;border-top:1px solid var(--line)}
+
+h2{font-family:"Fraunces",Georgia,serif;font-weight:400;font-size:1.5rem;margin:0 0 12px}
+.sec{margin-bottom:30px}
+.sechead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.keys{display:flex;gap:14px;font-size:.82rem;color:var(--muted);flex-wrap:wrap}
+.keys span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+
+.bvwrap{display:grid;gap:12px}
+.bvcard{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px}
+.bvtop{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.bvtop b{font-weight:600}
+.bvtop select{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:6px 10px}
+.bvrow{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.bvrow .lab{font-size:.95rem}
+.bvrow .lab small{display:block;color:var(--muted);font-size:.8rem}
+.bvnum{font-family:"Fraunces",Georgia,serif;font-size:1.35rem;white-space:nowrap}
+.bvnum small{font-family:"Figtree",system-ui,sans-serif;font-size:.8rem;color:var(--muted)}
+.pill{font-size:.75rem;border-radius:99px;padding:2px 9px;border:1px solid currentColor;white-space:nowrap}
+.pill.ok{color:var(--ok)}.pill.warn{color:var(--warn)}.pill.bad{color:var(--bad)}
+.bvnote{font-size:.82rem;color:var(--muted);margin:8px 0 0}
+
+.months{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.month{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 12px 10px}
+.month h3{margin:0 0 6px;font-size:.95rem;font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.wd{font-size:.68rem;color:var(--muted);text-align:center;padding-bottom:2px}
+.day{aspect-ratio:1;border:0;border-radius:6px;background:transparent;font-size:.74rem;padding:0;position:relative;color:var(--ink);font-variant-numeric:tabular-nums}
+.day:hover{background:var(--we)}
+.day.we{color:var(--muted)}
+.day.hol::after{content:"";position:absolute;left:50%;bottom:2px;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--hol)}
+.day.c{background:var(--c);color:#fff}
+.day.j{background:var(--j);color:#fff}
+.day.cj{background:linear-gradient(135deg,var(--c) 50%,var(--j) 50%);color:#fff}
+.day.tent{opacity:.5}
+.day.sk{background:transparent;box-shadow:inset 0 0 0 2px var(--sc);color:var(--sc);font-weight:600;opacity:1}
+.day.kd{background:transparent;box-shadow:inset 0 0 0 2px var(--sc);color:var(--sc);font-weight:600;border-radius:50%;opacity:1}
+.day.today{outline:1.5px solid var(--ink);outline-offset:-1px}
+
+.list{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.trip{display:grid;grid-template-columns:1fr auto;gap:4px 12px;padding:14px 4px;border:0;border-bottom:1px solid var(--line);background:none;text-align:left;width:100%}
+.trip:hover{background:var(--surface)}
+.trip .t{font-weight:600}
+.trip .d{color:var(--muted);font-size:.9rem;grid-column:1}
+.trip .r{grid-column:2;grid-row:1 / span 2;display:flex;flex-direction:column;align-items:flex-end;gap:6px;justify-content:center}
+.chips{display:flex;gap:4px}
+.chip{font-size:.75rem;padding:2px 8px;border-radius:99px;color:#fff;font-weight:500}
+.chip.ring{background:transparent!important;border:1.5px solid var(--sc);color:var(--sc)}
+.status{font-size:.75rem;color:var(--muted);border:1px dashed var(--line);border-radius:99px;padding:1px 8px}
+.status.genehmigt,.status.beantragt,.status.solid{border-style:solid}
+.status.genehmigt{color:var(--ink)}
+.past{opacity:.55}
+.empty{padding:26px 4px;color:var(--muted)}
+
+.dock{position:fixed;left:0;right:0;bottom:0;padding:12px 18px calc(16px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;pointer-events:none;background:linear-gradient(to top,var(--bg) 55%,transparent)}
+.primary{pointer-events:auto;border:0;background:var(--ink);color:var(--bg);border-radius:999px;padding:14px 26px;font-weight:600;font-size:1rem;box-shadow:0 6px 20px rgba(0,0,0,.15)}
+.foot{font-size:.8rem;color:var(--muted);text-align:center;margin-top:10px}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--muted);margin-right:6px;vertical-align:middle}
+.dot.on{background:var(--c)}
+
+dialog{border:1px solid var(--line);border-radius:20px;background:var(--surface);color:var(--ink);padding:0;width:min(520px,calc(100vw - 24px));max-height:calc(100dvh - 40px)}
+dialog::backdrop{background:rgba(20,18,14,.4)}
+.dlg{padding:20px 20px 18px;display:flex;flex-direction:column;gap:14px}
+.dlg h2{margin:0}
+label.f{display:flex;flex-direction:column;gap:5px;font-size:.88rem;color:var(--muted)}
+.f input,.f select,.f textarea{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:10px 12px;font-size:1rem;color:var(--ink);width:100%}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.seg{display:flex;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg)}
+.seg label{flex:1;text-align:center;position:relative}
+.seg input{position:absolute;opacity:0;inset:0}
+.seg span{display:block;padding:9px 6px;font-size:.92rem;color:var(--muted)}
+.seg input:checked+span{background:var(--ink);color:var(--bg)}
+.seg input:focus-visible+span{outline:2px solid var(--c);outline-offset:-2px}
+.seglabel{font-size:.88rem;color:var(--muted);margin-bottom:5px}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:.95rem}
+.check input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--ink);flex:none}
+.check small{display:block;color:var(--muted);font-size:.8rem}
+.pick{display:flex;flex-wrap:wrap;gap:5px}
+.pk{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:6px 8px;font-size:.82rem;color:var(--muted)}
+.pk.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.preview{font-size:.9rem;background:var(--bg);border-radius:10px;padding:10px 12px;color:var(--muted)}
+.preview b{color:var(--ink)}
+.preview .hint{display:block;margin-top:6px;color:var(--warn)}
+.actions{display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:4px}
+.actions .r{display:flex;gap:8px;margin-left:auto}
+.ghost{border:1px solid var(--line);background:none;border-radius:999px;padding:10px 16px}
+.danger{border:0;background:none;color:var(--bad);padding:10px 4px}
+.save{border:0;background:var(--ink);color:var(--bg);border-radius:999px;padding:10px 20px;font-weight:600}
+fieldset{border:1px solid var(--line);border-radius:14px;padding:12px 14px 14px;margin:0;display:flex;flex-direction:column;gap:10px}
+legend{padding:0 6px;font-weight:600}
+.subhead{font-size:.8rem;color:var(--muted);margin-top:4px}
+.days{display:flex;gap:4px;flex-wrap:wrap}
+.days label{position:relative}
+.days input{position:absolute;opacity:0}
+.days span{display:inline-block;width:38px;text-align:center;padding:6px 0;border:1px solid var(--line);border-radius:8px;font-size:.85rem;color:var(--muted)}
+.days input:checked+span{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.days input:focus-visible+span{outline:2px solid var(--c)}
+.exptext{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:12px;font-size:.92rem;line-height:1.55;resize:vertical;color:var(--ink)}
+.toast{position:fixed;left:50%;top:calc(16px + env(safe-area-inset-top,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:.92rem;z-index:50;max-width:calc(100vw - 32px);display:none}
+.toast.show{display:block}
+
+.kolbar{display:flex;gap:8px;flex-wrap:wrap}
+.banner{border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:12px;background:var(--surface);font-size:.92rem;color:var(--muted)}
+.banner.bad{border-color:var(--bad);color:var(--bad)}
+.banner ul{margin:6px 0 0;padding-left:18px}
+.banner.bad li{color:var(--ink)}
+.day.kol::before{content:"";position:absolute;left:22%;right:22%;top:2px;height:3px;border-radius:2px;background:var(--muted)}
+.day.clash{box-shadow:inset 0 0 0 2px var(--bad)}
+.day.clash::before{background:var(--bad)}
+.rev{display:flex;flex-direction:column;gap:8px;max-height:46vh;overflow:auto}
+.revrow{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--bg)}
+.revrow input[type=checkbox]{width:20px;height:20px;accent-color:var(--ink);margin:0}
+.revrow .flds{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:6px}
+.revrow input[type=text],.revrow input[type=date]{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 8px;font-size:.9rem;width:100%;min-width:0;color:var(--ink)}
+.revrow small{grid-column:2;color:var(--muted);font-size:.78rem}
+.revrow small.bad{color:var(--bad)}
+.drop{border:1.5px dashed var(--line);border-radius:14px;padding:18px;text-align:center;color:var(--muted);display:block;cursor:pointer}
+.drop small{font-size:.8rem}
+.drop input{position:absolute;opacity:0;width:1px;height:1px}
+.thumbs{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;justify-content:center}
+.thumbs img{height:56px;border-radius:6px;border:1px solid var(--line)}
+.trip .r .pill{max-width:180px;white-space:normal;text-align:right}
+@media (max-width:560px){.revrow .flds{grid-template-columns:1fr 1fr}.revrow .flds input[type=text]{grid-column:1 / span 2}}
+.day.bu{background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.4) 0 3px,transparent 3px 6px)}
+a.ghost{text-decoration:none;color:inherit;display:inline-flex;align-items:center}
+#antList{max-height:30vh}
+#antCheck span{display:block}
+#antCheck .bad{color:var(--bad)}#antCheck .warn{color:var(--warn)}#antCheck .ok{color:var(--ok)}
+#tripForm[data-type="bildung"] .only-sick,
+#tripForm[data-type="bildung"] .only-krank,
+#tripForm[data-type="bildung"] .only-urlaub,
+#tripForm[data-type="krank"] .only-plan,
+#tripForm[data-type="kindkrank"] .only-plan,
+#tripForm[data-type="urlaub"] .only-sick,
+#tripForm[data-type="urlaub"] .only-krank,
+#tripForm[data-type="kindkrank"] .only-krank,
+#tripForm[data-type="kindkrank"] .only-urlaub,
+#tripForm[data-type="krank"] .only-urlaub{display:none}
+
+@media (max-width:560px){
+  .people{gap:8px}
+  .person{padding:14px 12px 12px}
+  .months{grid-template-columns:1fr 1fr;gap:8px}
+  .month{padding:10px 8px 8px}
+  .day{font-size:.66rem;border-radius:4px}
+  .grid{gap:2px}
+  .bvrow{grid-template-columns:1fr auto}
+  .bvrow .pill{grid-column:2;justify-self:end}
+}
+@media (max-width:380px){ .months{grid-template-columns:1fr} }
+@media (prefers-reduced-motion:no-preference){ .day,.trip,.primary{transition:background .15s} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1><img src="icon-192.png" alt="" class="logo">Away</h1>
+    <div class="headtools">
+      <div class="yearnav"><button id="prevY" aria-label="Vorheriges Jahr">‹</button><span id="yearLabel"></span><button id="nextY" aria-label="Nächstes Jahr">›</button></div>
+      <button class="iconbtn" id="openExport">Export</button>
+      <button class="iconbtn" id="openSettings" aria-label="Einstellungen">⚙︎ <span>Einstellungen</span></button>
+    </div>
+  </header>
+  <p class="lede" id="lede"></p>
+
+  <div class="people" id="people"></div>
+
+  <section class="sec" id="bvSec" hidden>
+    <h2>Krankheitstage nach BV</h2>
+    <div class="bvwrap" id="bv"></div>
+  </section>
+
+  <section class="sec" id="kolSec">
+    <div class="sechead">
+      <h2>Kollegen</h2>
+      <div class="kolbar">
+        <button class="iconbtn" id="kolImport">Importieren</button>
+        <button class="iconbtn" id="kolAdd">Hinzufügen</button>
+      </div>
+    </div>
+    <div id="kolBanner"></div>
+    <div class="list" id="kolList"></div>
+  </section>
+
+  <section class="sec">
+    <div class="sechead">
+      <h2>Jahresübersicht</h2>
+      <div class="keys" id="keys"></div>
+    </div>
+    <div class="months" id="months"></div>
+  </section>
+
+  <section class="sec">
+    <h2>Einträge</h2>
+    <div class="list" id="list"></div>
+  </section>
+  <p class="foot" id="sync"><span class="dot"></span>Verbindung wird aufgebaut</p>
+</div>
+
+<div class="dock"><button class="primary" id="addBtn">Eintragen</button></div>
+<div class="toast" id="toast" role="status"></div>
+
+<dialog id="kolDlg">
+  <form class="dlg" id="kolForm" method="dialog">
+    <h2 id="kolTitle">Kollegenurlaub</h2>
+    <label class="f">Name<input name="name" required maxlength="60" autocomplete="off"></label>
+    <div class="row">
+      <label class="f">Von<input type="date" name="start" required></label>
+      <label class="f">Bis<input type="date" name="end" required></label>
+    </div>
+    <label class="f">Notiz<input name="note" maxlength="200" autocomplete="off"></label>
+    <div class="preview" id="kolPreview"></div>
+    <div class="actions">
+      <button type="button" class="danger" id="kolDel">Löschen</button>
+      <div class="r">
+        <button type="button" class="ghost" id="kolCancel">Abbrechen</button>
+        <button type="submit" class="save">Speichern</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="impDlg">
+  <div class="dlg">
+    <h2>Urlaube der Kollegen importieren</h2>
+    <div class="seg" id="impSeg">
+      <label><input type="radio" name="imp" value="bild" checked><span>Screenshot</span></label>
+      <label><input type="radio" name="imp" value="text"><span>Text</span></label>
+    </div>
+    <div id="impBild">
+      <label class="drop">Screenshot auswählen<br><small>z.B. Urlaubsplan oder Schichtplan, auch mehrere Bilder</small><input type="file" id="impFile" accept="image/png,image/jpeg,image/webp,image/gif" multiple></label>
+      <div class="thumbs" id="impThumbs"></div>
+    </div>
+    <label class="f" id="impTextWrap" hidden>Text einfügen<textarea id="impText" rows="6" placeholder="Max 12.03. bis 18.03.&#10;Lisa KW 20 und 21"></textarea></label>
+    <div class="preview" id="impStatus"></div>
+    <div class="rev" id="impRev"></div>
+    <div class="actions"><div class="r">
+      <button type="button" class="ghost" id="impClose">Schließen</button>
+      <button type="button" class="ghost" id="impRead">Auslesen</button>
+      <button type="button" class="save" id="impSave" disabled>Übernehmen</button>
+    </div></div>
+  </div>
+</dialog>
+
+<dialog id="tripDlg">
+  <form class="dlg" id="tripForm" method="dialog" data-type="urlaub">
+    <h2 id="tripTitle">Eintragen</h2>
+    <div class="seg" id="typeSeg">
+      <label><input type="radio" name="type" value="urlaub" checked><span>Urlaub</span></label>
+      <label><input type="radio" name="type" value="bildung"><span>Bildung</span></label>
+      <label><input type="radio" name="type" value="krank"><span>Krank</span></label>
+      <label><input type="radio" name="type" value="kindkrank"><span>Kind krank</span></label>
+    </div>
+    <label class="f">Titel<input name="title" id="titleIn" maxlength="80" autocomplete="off"></label>
+    <div class="row">
+      <label class="f">Von<input type="date" name="start" required></label>
+      <label class="f">Bis<input type="date" name="end" required></label>
+    </div>
+    <div>
+      <div class="seglabel" id="whoLabel">Wer hat frei?</div>
+      <div class="seg" id="whoSeg"></div>
+    </div>
+    <div class="only-plan">
+      <div class="seglabel">Status</div>
+      <div class="seg">
+        <label><input type="radio" name="status" value="geplant" checked><span>Geplant</span></label>
+        <label><input type="radio" name="status" value="beantragt"><span>Beantragt</span></label>
+        <label><input type="radio" name="status" value="genehmigt"><span>Genehmigt</span></label>
+      </div>
+    </div>
+    <div class="only-sick">
+      <div class="seglabel">An welchen Tagen hättest du gearbeitet?</div>
+      <div class="pick" id="pick"></div>
+    </div>
+    <label class="check only-sick"><input type="checkbox" name="au"><span>Mit ärztlicher Bescheinigung<small>AU bzw. eAU oder Attest für das Kind</small></span></label>
+    <label class="check only-krank"><input type="checkbox" name="rto"><span>An einem abgelehnten Urlaubstag oder RTO<small>Zählt für Punkt C der BV, wenn ohne AU</small></span></label>
+    <label class="f">Notiz<textarea name="note" rows="2" maxlength="400"></textarea></label>
+    <div class="preview" id="preview"></div>
+    <div class="actions">
+      <button type="button" class="danger" id="delTrip">Löschen</button>
+      <div class="r">
+        <button type="button" class="ghost" id="cancelTrip">Abbrechen</button>
+        <button type="submit" class="save">Speichern</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="setDlg">
+  <form class="dlg" id="setForm" method="dialog">
+    <h2>Einstellungen</h2>
+    <div id="setFields" style="display:flex;flex-direction:column;gap:12px"></div>
+    <div class="actions">
+      <button type="button" class="ghost" id="openBak">Datensicherung</button>
+      <div class="r">
+        <button type="button" class="ghost" id="cancelSet">Abbrechen</button>
+        <button type="submit" class="save">Speichern</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="bakDlg">
+  <div class="dlg">
+    <h2>Datensicherung</h2>
+    <div class="preview" id="bakInfo"></div>
+    <div class="bakbtns">
+      <button type="button" class="save" id="bakDown">Sicherung speichern</button>
+      <label class="ghost bakfile">Aus Datei wiederherstellen<input type="file" id="bakFile" accept="application/json,.json"></label>
+    </div>
+    <div class="seglabel">Automatische Sicherungen</div>
+    <div class="list" id="bakList"></div>
+    <div class="actions"><div class="r"><button type="button" class="ghost" id="bakClose">Schließen</button></div></div>
+  </div>
+</dialog>
+
+<dialog id="expDlg">
+  <div class="dlg">
+    <h2>Export</h2>
+    <div class="seg" id="expModeSeg">
+      <label><input type="radio" name="expMode" value="notes" checked><span>Für Notizen</span></label>
+      <label><input type="radio" name="expMode" value="antrag"><span>Urlaubsantrag Mail</span></label>
+    </div>
+    <div id="expAntrag" hidden style="display:none;flex-direction:column;gap:12px">
+      <div class="row">
+        <label class="f">Jahr<select id="antYear"></select></label>
+        <label class="f">Name in der Mail<input id="antName" autocomplete="off"></label>
+      </div>
+      <div><div class="seglabel">Diese Urlaube beantragen</div><div class="rev" id="antList"></div></div>
+      <label class="f">Folgende Aspekte sind zu beachten<textarea id="antAsp" rows="2" placeholder="z.B. 1 Kind (5 Jahre), Schulferien Hamburg"></textarea></label>
+      <label class="f">RTO Wünsche (optional)<input id="antRto" autocomplete="off" placeholder="z.B. 10.07.27 und 27.07.27"></label>
+      <div class="preview" id="antCheck"></div>
+    </div>
+    <div id="expNotes">
+      <div class="seglabel">Für wen?</div>
+      <div class="seg" id="expSeg">
+        <label><input type="radio" name="exp" value="christian"><span id="expC">Christian</span></label>
+        <label><input type="radio" name="exp" value="julia"><span id="expJ">Julia</span></label>
+        <label><input type="radio" name="exp" value="beide" checked><span>Beide</span></label>
+      </div>
+    </div>
+    <textarea id="expText" class="exptext" rows="12" readonly></textarea>
+    <div class="actions"><div class="r">
+      <button type="button" class="ghost" id="closeExp">Schließen</button>
+      <a class="ghost" id="mailExp" hidden target="_blank" rel="noopener">In Mail öffnen</a>
+      <button type="button" class="ghost" id="antMark" hidden>Als beantragt markieren</button>
+      <button type="button" class="ghost" id="shareExp" hidden>Teilen</button>
+      <button type="button" class="save" id="copyExp">Kopieren</button>
+    </div></div>
+  </div>
+</dialog>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+/* Firebase Konfiguration: Werte aus deinen anderen Apps übernehmen (Projekt homedashboard-8d951) */
+const FIREBASE_CONFIG={
+  apiKey:"HIER_EINTRAGEN",
+  authDomain:"homedashboard-8d951.firebaseapp.com",
+  projectId:"homedashboard-8d951",
+  storageBucket:"homedashboard-8d951.firebasestorage.app",
+  messagingSenderId:"HIER_EINTRAGEN",
+  appId:"HIER_EINTRAGEN"
+};
+(function(){
+const PEOPLE=["christian","julia"];
+const COLOR={christian:"var(--c)",julia:"var(--j)"};
+const DEFAULTS={
+  christian:{name:"Christian",bundesland:"HH",workdays:[1,2,3,4,5],years:{},extraName:"Thanksgiving",extraDefault:3,bv:true,stunden:32,vollzeit:40,kinder:1,kindPaid:10,bildungBase:5,mailName:"",aspekte:""},
+  julia:{name:"Julia",bundesland:"SH",workdays:[1,2,3,4,5],years:{},extraName:"",extraDefault:0,bv:false,stunden:40,vollzeit:40,kinder:1,kindPaid:0,bildungBase:0,mailName:"",aspekte:""}
+};
+const LAENDER={BW:"Baden Württemberg",BY:"Bayern",BE:"Berlin",BB:"Brandenburg",HB:"Bremen",HH:"Hamburg",HE:"Hessen",MV:"Mecklenburg Vorpommern",NI:"Niedersachsen",NW:"Nordrhein Westfalen",RP:"Rheinland Pfalz",SL:"Saarland",SN:"Sachsen",ST:"Sachsen Anhalt",SH:"Schleswig Holstein",TH:"Thüringen"};
+const MONTHS=["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+const MSHORT=["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
+const WDS=["So","Mo","Di","Mi","Do","Fr","Sa"];
+const WD=[["Mo",1],["Di",2],["Mi",3],["Do",4],["Fr",5],["Sa",6],["So",0]];
+const TYPES={urlaub:"Urlaub",bildung:"Bildungsurlaub",krank:"Krank",kindkrank:"Kind krank"};
+const LSKEY="urlaubstage:v1";
+
+const clone=o=>JSON.parse(JSON.stringify(o));
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,"0");
+const iso=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const parse=s=>{const p=String(s).split("-").map(Number);return new Date(p[0],p[1]-1,p[2]);};
+const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x;};
+const todayIso=iso(new Date());
+const typeOf=t=>["krank","kindkrank","bildung"].indexOf(t.type)>=0?t.type:"urlaub";
+const isPlan=t=>{const x=typeOf(t);return x==="urlaub"||x==="bildung";};
+
+let db=null;
+const state={year:new Date().getFullYear(),people:clone(DEFAULTS),trips:[],kollegen:[],mode:"loading",bvIdx:null};
+const ME="christian";
+let auSet={christian:new Set(),julia:new Set()};
+
+/* Feiertage */
+function easter(y){const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31),da=((h+l-7*m+114)%31)+1;return new Date(y,mo-1,da);}
+const holCache={};
+function holidays(y,land){
+  const key=y+land; if(holCache[key])return holCache[key];
+  const e=easter(y),m={};
+  const add=n=>addDays(e,n);
+  const set=(d,n)=>{m[iso(d)]=n;};
+  const inL=l=>l.indexOf(land)>=0;
+  set(new Date(y,0,1),"Neujahr");
+  if(inL(["BW","BY","ST"]))set(new Date(y,0,6),"Heilige Drei Könige");
+  if(inL(["BE","MV"]))set(new Date(y,2,8),"Frauentag");
+  set(add(-2),"Karfreitag");set(add(1),"Ostermontag");
+  set(new Date(y,4,1),"Tag der Arbeit");
+  set(add(39),"Christi Himmelfahrt");set(add(50),"Pfingstmontag");
+  if(inL(["BW","BY","HE","NW","RP","SL"]))set(add(60),"Fronleichnam");
+  if(inL(["SL"]))set(new Date(y,7,15),"Mariä Himmelfahrt");
+  if(inL(["TH"]))set(new Date(y,8,20),"Weltkindertag");
+  set(new Date(y,9,3),"Tag der Deutschen Einheit");
+  if(inL(["BB","HB","HH","MV","NI","SN","ST","SH","TH"]))set(new Date(y,9,31),"Reformationstag");
+  if(inL(["BW","BY","NW","RP","SL"]))set(new Date(y,10,1),"Allerheiligen");
+  if(land==="SN"){const d=new Date(y,10,22);while(d.getDay()!==3)d.setDate(d.getDate()-1);set(d,"Buß und Bettag");}
+  set(new Date(y,11,25),"1. Weihnachtstag");set(new Date(y,11,26),"2. Weihnachtstag");
+  return holCache[key]=m;
+}
+function isHol(p,d){return !!holidays(d.getFullYear(),state.people[p].bundesland)[iso(d)];}
+
+/* Berechnung */
+function isWork(p,d){const P=state.people[p];if(P.workdays.indexOf(d.getDay())<0)return false;return !isHol(p,d);}
+function eachDay(s,e,fn){const d=parse(s),end=parse(e);let guard=0;while(d<=end&&guard++<800){fn(new Date(d));d.setDate(d.getDate()+1);}}
+function entryDays(t,p){
+  if(Array.isArray(t.days))return t.days.filter(s=>typeof s==="string"&&s>=t.start&&s<=t.end);
+  const out=[];eachDay(t.start,t.end,d=>{if(isWork(p,d))out.push(iso(d));});return out;
+}
+function recompute(){
+  auSet={christian:new Set(),julia:new Set()};
+  state.trips.forEach(t=>{if(typeOf(t)==="krank"&&t.au)t.who.forEach(p=>{if(auSet[p])entryDays(t,p).forEach(s=>auSet[p].add(s));});});
+}
+function tripDays(t,p,year){
+  if(t.who.indexOf(p)<0)return 0;
+  if(!isPlan(t))return entryDays(t,p).filter(s=>year==null||s.slice(0,4)===String(year)).length;
+  let n=0;eachDay(t.start,t.end,d=>{if((year==null||d.getFullYear()===year)&&isWork(p,d)&&!auSet[p].has(iso(d)))n++;});return n;
+}
+function yearCfg(p,y){
+  const P=state.people[p],ys=P.years||{};
+  const dEx=Number(P.extraDefault!=null?P.extraDefault:DEFAULTS[p].extraDefault)||0;
+  const num=(v,f)=>v==null||v===""?f:(Number(v)||0);
+  if(ys[y])return{anspruch:num(ys[y].anspruch,30),extra:num(ys[y].extra,dEx),uebertrag:num(ys[y].uebertrag,0)};
+  const prev=Object.keys(ys).map(Number).filter(k=>k<y).sort((a,b)=>b-a);
+  const pv=prev.length?ys[prev[0]]:null;
+  return{anspruch:pv?num(pv.anspruch,30):30,extra:pv?num(pv.extra,dEx):dEx,uebertrag:0};
+}
+function account(p,y){
+  const cfg=yearCfg(p,y),total=cfg.anspruch+cfg.extra+cfg.uebertrag;let ok=0,pl=0;
+  state.trips.forEach(t=>{if(typeOf(t)!=="urlaub")return;const n=tripDays(t,p,y);if(t.status==="genehmigt")ok+=n;else pl+=n;});
+  return{cfg:cfg,total:total,ok:ok,pl:pl,rest:total-ok-pl};
+}
+function kindDefault(p,y){const n=Math.max(0,Number(state.people[p].kinder)||0);if(!n)return 0;const hi=y>=2024&&y<=2026;return Math.min((hi?15:10)*n,hi?35:25);}
+function kindAnspruch(p,y){const ys=state.people[p].years||{};const v=ys[y]&&ys[y].kind;return v==null||v===""?kindDefault(p,y):Number(v)||0;}
+function kindPaid(p){return Math.max(0,Number(state.people[p].kindPaid)||0);}
+function sickCount(p,y,type){let n=0;state.trips.forEach(t=>{if(typeOf(t)===type)n+=tripDays(t,p,y);});return n;}
+const FIRST_YEAR=2026;
+function bildungUsed(p,y){return sickCount(p,y,"bildung");}
+function bildungAnspruch(p,y){const P=state.people[p],ys=P.years||{};const v=ys[y]&&ys[y].bildung;if(v!=null&&v!=="")return Number(v)||0;const base=Math.max(0,Number(P.bildungBase)||0);if(!base)return 0;const carry=y-1>=FIRST_YEAR?Math.max(0,base-bildungUsed(p,y-1)):0;return base+carry;}
+function extraLabel(p){return state.people[p].extraName||"Sonderurlaub";}
+function inYear(t,y){return parse(t.start).getFullYear()<=y&&parse(t.end).getFullYear()>=y;}
+function validTrip(t){return t&&typeof t.start==="string"&&typeof t.end==="string"&&Array.isArray(t.who)&&/^\d{4}-\d{2}-\d{2}$/.test(t.start)&&/^\d{4}-\d{2}-\d{2}$/.test(t.end);}
+function nm(p){return state.people[p].name||DEFAULTS[p].name;}
+
+/* BV */
+function thrA(p){const P=state.people[p],h=Number(P.stunden)||0,v=Number(P.vollzeit)||0;return h>0&&v>0&&h<v?Math.ceil(20*h/v):20;}
+function isBridge(p,d){
+  const dow=d.getDay();if(dow===0||dow===6||isHol(p,d))return false;
+  const prev=addDays(d,-1),next=addDays(d,1);
+  const hp=isHol(p,prev),hn=isHol(p,next);
+  return (dow===5&&hp)||(dow===1&&hn)||(hp&&hn);
+}
+function periods(y){return[
+  {label:"Okt "+(y-1)+" bis Mär "+y,from:(y-1)+"-10-01",to:y+"-03-31",stich:"01.04."+y},
+  {label:"Apr bis Sep "+y,from:y+"-04-01",to:y+"-09-30",stich:"01.10."+y},
+  {label:"Okt "+y+" bis Mär "+(y+1),from:y+"-10-01",to:(y+1)+"-03-31",stich:"01.04."+(y+1)}
+];}
+function bvStats(p,per,year){
+  let A=0,B=0,C=0,D=0;
+  state.trips.forEach(t=>{
+    if(typeOf(t)!=="krank"||t.who.indexOf(p)<0)return;
+    let inP=false;
+    entryDays(t,p).forEach(s=>{
+      if(s>=per.from&&s<=per.to){A++;inP=true;if(!t.au&&parse(s).getDay()===6)B++;}
+      if(!t.au&&s.slice(0,4)===String(year)&&isBridge(p,parse(s)))D++;
+    });
+    if(t.rto&&!t.au&&inP)C++;
+  });
+  return{A:A,B:B,C:C,D:D};
+}
+function day4(p,start){let d=addDays(parse(start),3);let g=0;while((d.getDay()===0||isHol(p,d))&&g++<10)d=addDays(d,1);return d;}
+
+/* Darstellung */
+function fmtRange(s,e){
+  const a=parse(s),b=parse(e);
+  if(s===e)return a.getDate()+". "+MONTHS[a.getMonth()];
+  if(a.getMonth()===b.getMonth()&&a.getFullYear()===b.getFullYear())return a.getDate()+". bis "+b.getDate()+". "+MONTHS[a.getMonth()];
+  const ya=a.getFullYear()!==b.getFullYear()?" "+a.getFullYear():"";
+  return a.getDate()+". "+MONTHS[a.getMonth()]+ya+" bis "+b.getDate()+". "+MONTHS[b.getMonth()]+(ya?" "+b.getFullYear():"");
+}
+function el(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e;}
+function plural(n,one,many){return n+" "+(n===1||n===-1?one:many);}
+
+function render(){
+  recompute();
+  const y=state.year;
+  $("yearLabel").textContent=y;
+  renderLede();renderPeople(y);renderBV(y);renderKol(y);renderKeys();renderMonths(y);renderList(y);renderSync();
+}
+function renderLede(){
+  const L=$("lede");L.textContent="";
+  if(state.mode==="loading"){L.textContent="Daten werden geladen.";return;}
+  const up=state.trips.filter(t=>typeOf(t)==="urlaub"&&t.end>=todayIso).sort((a,b)=>a.start<b.start?-1:1);
+  if(!up.length){L.textContent="Noch nichts geplant. Zeit, sich gemeinsam etwas auszusuchen.";return;}
+  const t=up[0],both=t.who.length===2,who=both?"Ihr beide":nm(t.who[0]);
+  if(t.start<=todayIso){L.append(who+(both?" seid":" ist")+" gerade im Urlaub: ");L.append(el("strong",null,t.title||"Urlaub"));return;}
+  const diff=Math.round((parse(t.start)-parse(todayIso))/864e5);
+  L.append("Noch ");L.append(el("strong",null,plural(diff,"Tag","Tage")));L.append(" bis „");L.append(el("strong",null,t.title||"Urlaub"));L.append("“"+(both?", ihr fahrt zusammen.":" für "+who+"."));
+}
+function renderPeople(y){
+  const box=$("people");box.textContent="";
+  PEOPLE.forEach(p=>{
+    const A=account(p,y),cfg=A.cfg,total=A.total,ok=A.ok,pl=A.pl,rest=A.rest;
+    const c=el("div","person");c.style.setProperty("--pc",COLOR[p]);
+    c.append(el("div","name",nm(p)));
+    c.append(el("div","big"+(rest<0?" neg":""),String(rest)));
+    c.append(el("div","sub",(rest===1||rest===-1?"Tag":"Tage")+" übrig von "+total));
+    const parts=[cfg.anspruch+" Urlaub"];if(cfg.extra)parts.push(cfg.extra+" "+extraLabel(p));if(cfg.uebertrag)parts.push(cfg.uebertrag+" Übertrag");
+    c.append(el("div","sub small",parts.join(", ")));
+    const bar=el("div","bar");
+    const w=v=>total>0?Math.max(0,Math.min(100,v/total*100)):0;
+    const a=el("i","ok");a.style.width=w(ok)+"%";const b=el("i","pl");b.style.width=w(pl)+"%";
+    bar.append(a,b);c.append(bar);
+    const lg=el("div","legend");
+    const s1=el("span");s1.append(el("b",null,String(ok))," genehmigt");
+    const s2=el("span");s2.append(el("b",null,String(pl))," geplant");
+    lg.append(s1,s2);c.append(lg);
+    const ba=bildungAnspruch(p,y),bu=bildungUsed(p,y);
+    if(ba>0||bu>0){const bl=el("div","legend");bl.style.marginTop="4px";const sp=el("span");sp.append(el("b",null,String(bu))," von "+ba+" Bildungsurlaub");bl.append(sp);c.append(bl);}
+    const sl=el("div","legend sickline");
+    const k1=el("span");k1.append(el("b",null,String(sickCount(p,y,"krank")))," krank");
+    sl.append(k1);
+    const ka=kindAnspruch(p,y),kp=kindPaid(p),ku=sickCount(p,y,"kindkrank");
+    if(kp>0){const k3=el("span");k3.append(el("b",null,String(Math.min(ku,kp)))," von "+kp+" Kind krank bezahlt");sl.append(k3);}
+    if(ka>0||ku>kp){const k2=el("span");k2.append(el("b",null,String(Math.max(0,ku-kp)))," von "+ka+" Kinderkrankengeld");sl.append(k2);}
+    c.append(sl);
+    box.append(c);
+  });
+}
+function renderBV(y){
+  const sec=$("bvSec"),box=$("bv");box.textContent="";
+  const ps=PEOPLE.filter(p=>state.people[p].bv);
+  sec.hidden=!ps.length;if(!ps.length)return;
+  const pers=periods(y);
+  if(state.bvIdx==null){const i=pers.findIndex(x=>todayIso>=x.from&&todayIso<=x.to);state.bvIdx=i>=0?i:1;}
+  const per=pers[state.bvIdx];
+  ps.forEach(p=>{
+    const s=bvStats(p,per,y),card=el("div","bvcard");
+    const top=el("div","bvtop");const nmB=el("b",null,nm(p));nmB.style.color=COLOR[p];top.append(nmB);
+    const sel=document.createElement("select");sel.setAttribute("aria-label","Betrachtungszeitraum");
+    pers.forEach((x,i)=>{const o=el("option",null,x.label);o.value=i;if(i===state.bvIdx)o.selected=true;sel.append(o);});
+    sel.addEventListener("change",()=>{state.bvIdx=Number(sel.value);render();});
+    top.append(sel);card.append(top);
+    const P=state.people[p];
+    const rows=[
+      ["Krankheitstage im Zeitraum","Nur Tage, an denen du gearbeitet hättest. Grenze bei "+P.stunden+" von "+P.vollzeit+" Std.",s.A,thrA(p)],
+      ["Samstage ohne AU","Einzeln oder zusammen mit Freitag oder Montag",s.B,3],
+      ["Abgelehnte Urlaubstage oder RTOs ohne AU","Im Zeitraum",s.C,2],
+      ["Brückentage ohne AU","Kalenderjahr "+y,s.D,2]
+    ];
+    let any=false;
+    rows.forEach(r=>{
+      const row=el("div","bvrow");const lab=el("div","lab",r[0]);lab.append(el("small",null,r[1]));
+      const num=el("div","bvnum",String(r[2]));num.append(el("small",null," von max. "+r[3]));
+      const st=r[2]>r[3]?["bad","überschritten"]:r[2]===r[3]?["warn","Grenze erreicht"]:r[3]-r[2]<=Math.max(1,Math.round(r[3]*.2))?["warn","noch "+(r[3]-r[2])]:["ok","im Rahmen"];
+      if(r[2]>r[3])any=true;
+      row.append(lab,num,el("span","pill "+st[0],st[1]));card.append(row);
+    });
+    card.append(el("p","bvnote",(any?"Mindestens eine Grenze ist überschritten. Apple darf dann nach Beratung mit dem Betriebsrat eine AU ab dem ersten Tag verlangen, zunächst für bis zu sechs Monate. ":"")+"Nächster Stichtag: "+per.stich+". Ab dem vierten Kalendertag ist immer eine AU nötig."));
+    box.append(card);
+  });
+}
+function renderKeys(){
+  const k=$("keys");k.textContent="";
+  const add=(css,t)=>{const s=el("span");const sw=el("i","sw");sw.style.cssText=css;s.append(sw,t);k.append(s);};
+  add("background:var(--c)",nm("christian"));add("background:var(--j)",nm("julia"));
+  add("background:linear-gradient(135deg,var(--c) 50%,var(--j) 50%)","Gemeinsam");
+  add("box-shadow:inset 0 0 0 2px var(--muted)","Krank");
+  add("box-shadow:inset 0 0 0 2px var(--muted);border-radius:50%","Kind krank");
+  add("width:6px;height:6px;border-radius:50%;background:var(--hol)","Feiertag");
+  if(state.kollegen.length){add("height:3px;border-radius:2px;background:var(--muted)","Kollegen");add("box-shadow:inset 0 0 0 2px var(--bad)","Überschneidung");}
+}
+function renderMonths(y){
+  const map={};
+  state.trips.forEach(t=>{
+    const ty=typeOf(t);
+    if(ty==="urlaub"||ty==="bildung"){eachDay(t.start,t.end,d=>{if(d.getFullYear()!==y)return;const k=iso(d);const m=map[k]||(map[k]={who:{},ok:false,sick:null});t.who.forEach(p=>{m.who[p]=true;});if(ty==="bildung")m.bu=true;if(t.status==="genehmigt")m.ok=true;});}
+    else{t.who.forEach(p=>{eachDay(t.start,t.end,d=>{if(d.getFullYear()!==y)return;const k=iso(d);const m=map[k]||(map[k]={who:{},ok:false,sick:null});if(!m.sick)m.sick={p:p,ty:ty};});});}
+  });
+  const kmap={};
+  state.kollegen.forEach(kk=>{eachDay(kk.start,kk.end,d=>{if(d.getFullYear()!==y)return;const k=iso(d);(kmap[k]||(kmap[k]=[])).push(kk.name);});});
+  const H=Object.assign({},holidays(y,state.people.julia.bundesland),holidays(y,state.people.christian.bundesland));
+  const box=$("months");box.textContent="";
+  for(let mo=0;mo<12;mo++){
+    const card=el("div","month");card.append(el("h3",null,MONTHS[mo]));
+    const g=el("div","grid");
+    ["M","D","M","D","F","S","S"].forEach(x=>g.append(el("div","wd",x)));
+    const lead=(new Date(y,mo,1).getDay()+6)%7;
+    for(let i=0;i<lead;i++)g.append(el("div"));
+    const dim=new Date(y,mo+1,0).getDate();
+    for(let d=1;d<=dim;d++){
+      const dt=new Date(y,mo,d),k=iso(dt);
+      const b=el("button","day",String(d));b.type="button";b.dataset.d=k;
+      const dow=dt.getDay();if(dow===0||dow===6)b.classList.add("we");
+      let label=d+". "+MONTHS[mo];
+      if(H[k]){b.classList.add("hol");label+=", "+H[k];}
+      const m=map[k];
+      if(m&&m.sick){b.classList.add(m.sick.ty==="krank"?"sk":"kd");b.style.setProperty("--sc",COLOR[m.sick.p]);label+=", "+nm(m.sick.p)+" "+TYPES[m.sick.ty].toLowerCase();}
+      else if(m){const c=m.who.christian,j=m.who.julia;b.classList.add(c&&j?"cj":c?"c":"j");if(!m.ok)b.classList.add("tent");if(m.bu)b.classList.add("bu");label+=", frei: "+[c?nm("christian"):null,j?nm("julia"):null].filter(Boolean).join(" und ");}
+      if(kmap[k]){b.classList.add("kol");label+=", Kollegen: "+kmap[k].join(", ");if(m&&!m.sick&&m.who[ME])b.classList.add("clash");}
+      if(k===todayIso)b.classList.add("today");
+      b.title=label;b.setAttribute("aria-label",label);
+      g.append(b);
+    }
+    card.append(g);box.append(card);
+  }
+}
+function renderList(y){
+  const box=$("list");box.textContent="";
+  const ts=state.trips.filter(t=>inYear(t,y)).sort((a,b)=>a.start<b.start?-1:a.start>b.start?1:0);
+  if(!ts.length){box.append(el("div","empty",state.mode==="loading"?"Lädt.":"Für "+y+" ist noch nichts eingetragen. Tippe auf einen Tag im Kalender oder auf „Eintragen“."));return;}
+  ts.forEach(t=>{
+    const ty=typeOf(t);
+    const r=el("button","trip"+(t.end<todayIso?" past":""));r.type="button";
+    r.append(el("div","t",t.title||TYPES[ty]));
+    const parts=t.who.map(p=>{const n=tripDays(t,p,y);return nm(p)+" "+(isPlan(t)?plural(n,"Tag","Tage"):plural(n,"Arbeitstag","Arbeitstage"));});
+    r.append(el("div","d",fmtRange(t.start,t.end)+", "+parts.join(", ")));
+    const right=el("div","r");const ch=el("div","chips");
+    t.who.forEach(p=>{const c=el("span","chip"+(isPlan(t)?"":" ring"),nm(p));if(isPlan(t))c.style.background=COLOR[p];else c.style.setProperty("--sc",COLOR[p]);ch.append(c);});
+    let stTxt,stCls;
+    if(isPlan(t)){stCls=t.status||"geplant";stTxt=(ty==="bildung"?"Bildung, ":"")+({geplant:"Geplant",beantragt:"Beantragt",genehmigt:"Genehmigt"}[stCls]||"Geplant");}
+    else{stCls=t.au?"solid":"";stTxt=TYPES[ty]+(t.au?", mit AU":", ohne AU");}
+    right.append(ch,el("span","status "+stCls,stTxt));
+    if(isPlan(t)&&t.who.indexOf(ME)>=0){const ns=state.kollegen.filter(k=>overlap(t,k)).map(k=>k.name);if(ns.length)right.append(el("span","pill bad","Überschneidung mit "+ns.join(", ")));}
+    r.append(right);
+    r.addEventListener("click",()=>openTrip(t));
+    box.append(r);
+  });
+}
+function renderSync(){
+  const s=$("sync");s.textContent="";const d=el("span","dot");
+  if(state.mode==="sync"){d.classList.add("on");s.append(d,"Synchronisiert, Änderungen sind sofort für beide sichtbar");}
+  else if(state.mode==="local"){s.append(d,"Nur auf diesem Gerät gespeichert (Firebase nicht eingerichtet)");}
+  else if(state.mode==="offline"){s.append(d,"Offline, angezeigt wird der zuletzt gespeicherte Stand");}
+  else s.append(d,"Verbindung wird aufgebaut");
+}
+
+/* Toast */
+let toastT;function toast(msg){const t=$("toast");t.textContent=msg;t.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("show"),3800);}
+
+/* Speicher */
+function loadLocal(){try{const raw=localStorage.getItem(LSKEY);if(raw){const o=JSON.parse(raw);PEOPLE.forEach(p=>{if(o.people&&o.people[p])state.people[p]=Object.assign(clone(DEFAULTS[p]),o.people[p]);});if(Array.isArray(o.trips))state.trips=o.trips.filter(validTrip);if(Array.isArray(o.kollegen))state.kollegen=o.kollegen.filter(validKol);}}catch(e){}}
+function saveLocal(){try{localStorage.setItem(LSKEY,JSON.stringify({people:state.people,trips:state.trips,kollegen:state.kollegen}));}catch(e){}}
+const COL="household",KEYS={people:"urlaubstage:people",trips:"urlaubstage:trips",kollegen:"urlaubstage:kollegen"};
+let pendingWrites=0,lastSig="";
+function parseValue(v){if(typeof v==="string"){try{return JSON.parse(v);}catch(e){return null;}}return v==null?null:v;}
+function dbFail(e){console.error(e);toast("Speichern fehlgeschlagen. Bitte Verbindung prüfen.");}
+function ref(k){return db.collection(COL).doc(KEYS[k]);}
+async function putEntry(k,id,body){
+  const fp=new firebase.firestore.FieldPath("value",id);
+  const val=body===null?firebase.firestore.FieldValue.delete():body;
+  try{await ref(k).update(fp,val,"updated",Date.now());}
+  catch(e){
+    if(e&&e.code==="not-found"){if(body===null)return;await ref(k).set({value:{[id]:body},updated:Date.now()},{merge:true});}
+    else throw e;
+  }
+}
+function applyLocal(list,id,body){
+  const arr=state[list],i=arr.findIndex(x=>x.id===id);
+  if(body===null){if(i>=0)arr.splice(i,1);}
+  else{const full=Object.assign({id:id},body);if(i>=0)arr[i]=full;else arr.push(full);}
+}
+async function save(list,id,body){
+  applyLocal(list,id,body);saveLocal();render();
+  if(!db)return true;
+  pendingWrites++;
+  try{await putEntry(list,id,body);return true;}
+  catch(e){dbFail(e);return false;}
+  finally{pendingWrites--;lastSig="";poll();}
+}
+async function writeTrip(t){
+  const body={type:t.type,title:t.title||"",start:t.start,end:t.end,who:t.who,status:t.status||"",note:t.note||"",updated:Date.now()};
+  if(t.type==="krank"||t.type==="kindkrank"){body.days=t.days||[];body.au=!!t.au;body.rto=!!t.rto;}
+  return save("trips",t.id,body);
+}
+function removeTrip(id){return save("trips",id,null);}
+async function writePeople(next){
+  state.people=next;saveLocal();render();
+  if(!db)return;
+  pendingWrites++;
+  try{await ref("people").set({value:clone(next),updated:Date.now()});}
+  catch(e){dbFail(e);}
+  finally{pendingWrites--;lastSig="";poll();}
+}
+function newId(){return "t"+Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+async function poll(){
+  if(!db||pendingWrites>0)return;
+  try{
+    const snaps=await Promise.all(["people","trips","kollegen"].map(k=>ref(k).get({source:"server"})));
+    if(pendingWrites>0)return;
+    const vals=snaps.map(x=>x.exists?parseValue((x.data()||{}).value):null);
+    const sig=JSON.stringify(vals);
+    const wasOff=state.mode!=="sync";state.mode="sync";
+    if(sig===lastSig){if(wasOff)renderSync();autoBackup();return;}
+    lastSig=sig;
+    const P=vals[0],T=vals[1],K=vals[2];
+    if(P&&typeof P==="object")PEOPLE.forEach(p=>{if(P[p]){state.people[p]=Object.assign(clone(DEFAULTS[p]),P[p]);if(!Array.isArray(state.people[p].workdays))state.people[p].workdays=[1,2,3,4,5];}});
+    state.trips=T&&typeof T==="object"?Object.keys(T).map(id=>Object.assign({id:id},T[id])).filter(validTrip):[];
+    state.kollegen=K&&typeof K==="object"?Object.keys(K).map(id=>Object.assign({id:id},K[id])).filter(validKol):[];
+    saveLocal();render();autoBackup();
+  }catch(e){console.error(e);state.mode="offline";renderSync();}
+}
+async function initDb(){
+  loadLocal();
+  if(!window.firebase||String(FIREBASE_CONFIG.apiKey).indexOf("HIER")===0){state.mode="local";render();return;}
+  try{firebase.initializeApp(FIREBASE_CONFIG);db=firebase.firestore();}catch(e){console.error(e);state.mode="local";render();return;}
+  render();
+  await poll();
+  setInterval(poll,5000);
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden)poll();});
+}
+
+/* Eintrag Dialog */
+const tripDlg=$("tripDlg"),tripForm=$("tripForm");let editing=null,pickState={};
+function curType(){return tripForm.dataset.type;}
+function buildWho(){
+  const s=$("whoSeg");s.textContent="";
+  [["christian",nm("christian")],["julia",nm("julia")],["beide","Beide"]].forEach(([v,l])=>{
+    const lab=el("label",v==="beide"?"only-urlaub":null);const inp=document.createElement("input");inp.type="radio";inp.name="who";inp.value=v;
+    lab.append(inp,el("span",null,l));s.append(lab);
+  });
+}
+function formWho(){const v=tripForm.who.value;if(curType()!=="urlaub")return[v==="julia"?"julia":"christian"];return v==="beide"?["christian","julia"]:[v||"christian"];}
+function setType(ty){
+  tripForm.dataset.type=ty;tripForm.type.value=ty;
+  if(ty!=="urlaub"&&tripForm.who.value==="beide")tripForm.who.value="christian";
+  $("whoLabel").textContent={urlaub:"Wer hat frei?",bildung:"Wer geht in Bildungsurlaub?",krank:"Wer ist krank?",kindkrank:"Wer bleibt beim Kind?"}[ty];
+  $("titleIn").placeholder={urlaub:"z.B. Mallorca, Brückentag",bildung:"z.B. Seminar, Sprachkurs",krank:"Optional, z.B. Erkältung",kindkrank:"Optional, z.B. Name des Kindes"}[ty];
+  $("tripTitle").textContent=(editing?"Bearbeiten: ":"Eintragen: ")+TYPES[ty];
+}
+function range(){let s=tripForm.start.value,e=tripForm.end.value;if(!s||!e)return null;if(e<s){const x=s;s=e;e=x;}return{s:s,e:e};}
+function buildPick(){
+  const box=$("pick");box.textContent="";
+  if(curType()==="urlaub"||curType()==="bildung")return;
+  const r=range();if(!r)return;
+  const p=formWho()[0];let n=0;
+  eachDay(r.s,r.e,d=>{
+    if(n++>62)return;
+    const k=iso(d);if(!(k in pickState))pickState[k]=isWork(p,d);
+    const b=el("button","pk"+(pickState[k]?" on":""),WDS[d.getDay()]+" "+d.getDate()+". "+MSHORT[d.getMonth()]);
+    b.type="button";b.dataset.k=k;b.setAttribute("aria-pressed",pickState[k]?"true":"false");box.append(b);
+  });
+}
+function pickedDays(){const r=range();if(!r)return[];const out=[];eachDay(r.s,r.e,d=>{const k=iso(d);if(pickState[k])out.push(k);});return out;}
+function updatePreview(){
+  const P=$("preview");P.textContent="";
+  const r=range();
+  if(!r){P.textContent="Zeitraum wählen.";return;}
+  const ty=curType(),who=formWho();
+  const total=Math.round((parse(r.e)-parse(r.s))/864e5)+1;
+  if(ty==="urlaub"||ty==="bildung"){
+    const t={type:ty,start:r.s,end:r.e,who:who};
+    P.append(plural(total,"Kalendertag","Kalendertage")+(ty==="bildung"?". Abzug vom Bildungsurlaub: ":". Abzug vom Urlaubskonto: "));
+    who.forEach((p,i)=>{if(i)P.append(", ");P.append(nm(p)+" ");P.append(el("b",null,plural(tripDays(t,p,null),"Tag","Tage")));});
+    if(ty==="bildung"){const p=who[0],y=parse(r.s).getFullYear(),ba=bildungAnspruch(p,y),used=bildungUsed(p,y)-(editing&&typeOf(editing)==="bildung"?tripDays(editing,p,y):0);P.append(el("span","hint","Danach "+(ba-used-tripDays(t,p,y))+" von "+ba+" Bildungsurlaubstagen "+y+" übrig."));}
+    if(who.indexOf(ME)>=0){const ns=state.kollegen.filter(k=>overlap(t,k)).map(k=>k.name+" ("+fmtRange(k.start,k.end)+")");if(ns.length){const h=el("span","hint","Überschneidung mit "+ns.join(", "));h.style.color="var(--bad)";P.append(h);}}
+    return;
+  }
+  const p=who[0],n=pickedDays().length;
+  P.append(plural(total,"Kalendertag","Kalendertage")+", davon ");P.append(el("b",null,plural(n,"Arbeitstag","Arbeitstage")));P.append(" ausgefallen.");
+  const au=tripForm.au.checked;
+  if(ty==="krank"){
+    if(state.people[p].bv&&total>3&&!au){const d=day4(p,r.s);P.append(el("span","hint","Länger als drei Kalendertage: AU spätestens am "+WDS[d.getDay()]+", "+pad(d.getDate())+"."+pad(d.getMonth()+1)+". vorlegen."));}
+    if(au){let ov=0;const ds=pickedDays();state.trips.forEach(t=>{if(typeOf(t)==="urlaub"&&t.who.indexOf(p)>=0)ds.forEach(s=>{if(s>=t.start&&s<=t.end)ov++;});});if(ov)P.append(el("span","hint",plural(ov,"Urlaubstag wird","Urlaubstage werden")+" dir wegen der AU gutgeschrieben."));}
+    if(state.people[p].bv&&!au){const br=pickedDays().filter(s=>isBridge(p,parse(s))).length,sa=pickedDays().filter(s=>parse(s).getDay()===6).length;
+      if(br)P.append(el("span","hint",plural(br,"Brückentag","Brückentage")+" ohne AU, zählt für die BV."));
+      if(sa)P.append(el("span","hint",plural(sa,"Samstag","Samstage")+" ohne AU, zählt für die BV."));}
+  }else{
+    const y=parse(r.s).getFullYear(),used=sickCount(p,y,"kindkrank")-(editing&&typeOf(editing)==="kindkrank"?tripDays(editing,p,y):0),ka=kindAnspruch(p,y);
+    const kp=kindPaid(p),tot=used+n,paidLeft=Math.max(0,kp-tot),kkgLeft=ka-Math.max(0,tot-kp);
+    P.append(el("span","hint",(kp?"Danach "+paidLeft+" von "+kp+" voll bezahlten Tagen und ":"Danach ")+kkgLeft+" von "+ka+" Kinderkrankengeld Tagen "+y+" übrig."));
+  }
+}
+function openTrip(t,presetDate){
+  buildWho();editing=t||null;pickState={};
+  const ty=t?typeOf(t):"urlaub";
+  $("delTrip").style.visibility=t?"visible":"hidden";
+  tripForm.title.value=t?t.title||"":"";
+  const d0=presetDate||todayIso;
+  tripForm.start.value=t?t.start:d0;tripForm.end.value=t?t.end:d0;
+  tripForm.who.value=t?(t.who.length===2?"beide":t.who[0]):"beide";
+  tripForm.status.value=t?(t.status||"geplant"):"geplant";
+  tripForm.note.value=t?t.note||"":"";
+  tripForm.au.checked=!!(t&&t.au);tripForm.rto.checked=!!(t&&t.rto);
+  if(t&&!isPlan(t)){const ds=entryDays(t,t.who[0]);eachDay(t.start,t.end,d=>{const k=iso(d);pickState[k]=ds.indexOf(k)>=0;});}
+  setType(ty);buildPick();updatePreview();
+  tripDlg.showModal();
+}
+tripForm.addEventListener("change",e=>{
+  if(e.target.name==="type"){setType(e.target.value);pickState={};buildPick();}
+  if(e.target.name==="who"){pickState={};buildPick();}
+  updatePreview();
+});
+tripForm.addEventListener("input",e=>{
+  if(e.target.name==="start"&&tripForm.end.value&&tripForm.end.value<tripForm.start.value)tripForm.end.value=tripForm.start.value;
+  if(e.target.name==="start"||e.target.name==="end")buildPick();
+  updatePreview();
+});
+$("pick").addEventListener("click",e=>{const b=e.target.closest(".pk");if(!b)return;pickState[b.dataset.k]=!pickState[b.dataset.k];buildPick();updatePreview();});
+tripForm.addEventListener("submit",e=>{
+  e.preventDefault();
+  const r=range();if(!r){toast("Bitte Start und Ende wählen.");return;}
+  const ty=curType();
+  const t={id:editing?editing.id:newId(),type:ty,title:tripForm.title.value.trim(),start:r.s,end:r.e,who:formWho(),status:(ty==="urlaub"||ty==="bildung")?(tripForm.status.value||"geplant"):"",note:tripForm.note.value.trim()};
+  if(ty==="krank"||ty==="kindkrank"){t.days=pickedDays();t.au=tripForm.au.checked;t.rto=ty==="krank"&&tripForm.rto.checked;}
+  tripDlg.close();
+  if(!inYear(t,state.year)){state.year=parse(r.s).getFullYear();state.bvIdx=null;}
+  writeTrip(t);
+  toast(editing?"Gespeichert.":TYPES[ty]+" eingetragen.");
+});
+$("cancelTrip").addEventListener("click",()=>tripDlg.close());
+$("delTrip").addEventListener("click",()=>{
+  if(!editing)return;
+  if(!confirm("„"+(editing.title||TYPES[typeOf(editing)])+"“ wirklich löschen?"))return;
+  const id=editing.id;tripDlg.close();removeTrip(id);toast("Gelöscht.");
+});
+
+/* Einstellungen */
+const setDlg=$("setDlg"),setForm=$("setForm");
+function openSettings(){
+  const y=state.year,box=$("setFields");box.textContent="";
+  PEOPLE.forEach(p=>{
+    const P=state.people[p],cfg=yearCfg(p,y);
+    const fs=el("fieldset");const lg=el("legend",null,nm(p));lg.style.color=COLOR[p];fs.append(lg);
+    const mk=(label,name,val,type)=>{const l=el("label","f",label);const i=document.createElement("input");i.name=p+"_"+name;i.value=val;if(type){i.type=type;i.min="0";i.step="0.5";i.inputMode="decimal";}l.append(i);return l;};
+    const two=(a,b)=>{const r=el("div","row");r.append(a,b);fs.append(r);};
+    fs.append(mk("Name","name",P.name||""));
+    fs.append(el("div","subhead","Urlaub "+y));
+    two(mk("Anspruch","anspruch",cfg.anspruch,"number"),mk("Übertrag aus "+(y-1),"uebertrag",cfg.uebertrag,"number"));
+    two(mk("Sonderurlaub Name","extraName",P.extraName||""),mk("Sonderurlaub Tage","extra",cfg.extra,"number"));
+    const sl=el("label","f","Bundesland für Feiertage");const sel=document.createElement("select");sel.name=p+"_land";
+    Object.keys(LAENDER).forEach(k=>{const o=el("option",null,LAENDER[k]);o.value=k;if(k===P.bundesland)o.selected=true;sel.append(o);});sl.append(sel);fs.append(sl);
+    const wl=el("div");wl.append(el("div","seglabel","Arbeitstage"));const ds=el("div","days");
+    WD.forEach(([lab,n])=>{const l=el("label");const i=document.createElement("input");i.type="checkbox";i.name=p+"_wd";i.value=n;i.checked=P.workdays.indexOf(n)>=0;l.append(i,el("span",null,lab));ds.append(l);});
+    wl.append(ds);fs.append(wl);
+    fs.append(el("div","subhead","Krankheit und Kind krank"));
+    const cb=el("label","check");const ci=document.createElement("input");ci.type="checkbox";ci.name=p+"_bv";ci.checked=!!P.bv;cb.append(ci);const cs=el("span",null,"Krankheitsregeln der BV anwenden");cs.append(el("small",null,"Betriebsvereinbarung Arbeitsunfähigkeit Apple Alstertal"));cb.append(cs);fs.append(cb);
+    two(mk("Wochenstunden","stunden",P.stunden,"number"),mk("Vollzeit Stunden","vollzeit",P.vollzeit,"number"));
+    two(mk("Anzahl Kinder","kinder",P.kinder,"number"),mk("Kinderkrankengeld Tage "+y,"kind",kindAnspruch(p,y),"number"));
+    fs.append(mk("Kind krank Tage, voll bezahlt vom Arbeitgeber","kindPaid",kindPaid(p),"number"));
+    fs.append(el("div","subhead","Bildungsurlaub"));
+    two(mk("Tage pro Jahr","bildungBase",P.bildungBase||0,"number"),mk("Verfügbar "+y,"bildung",bildungAnspruch(p,y),"number"));
+    box.append(fs);
+  });
+  setDlg.showModal();
+}
+setForm.addEventListener("submit",e=>{
+  e.preventDefault();
+  const y=String(state.year),next=clone(state.people);
+  const n=(v,d)=>{const x=Number(v);return isFinite(x)&&x>=0?x:d;};
+  PEOPLE.forEach(p=>{
+    const f=k=>setForm.elements[p+"_"+k];
+    next[p].name=f("name").value.trim()||DEFAULTS[p].name;
+    next[p].bundesland=f("land").value;
+    const wd=Array.from(setForm.querySelectorAll('input[name="'+p+'_wd"]:checked')).map(i=>Number(i.value));
+    next[p].workdays=wd.length?wd:[1,2,3,4,5];
+    next[p].extraName=f("extraName").value.trim();
+    next[p].bv=f("bv").checked;
+    next[p].stunden=n(f("stunden").value,40);next[p].vollzeit=n(f("vollzeit").value,40)||40;
+    next[p].kinder=Math.round(n(f("kinder").value,0));
+    next[p].kindPaid=n(f("kindPaid").value,0);
+    next[p].bildungBase=n(f("bildungBase").value,0);
+    next[p].years=next[p].years||{};
+    const kindVal=n(f("kind").value,0),kindDef=(()=>{const save=state.people[p].kinder;state.people[p].kinder=next[p].kinder;const v=kindDefault(p,Number(y));state.people[p].kinder=save;return v;})();
+    const yr={anspruch:n(f("anspruch").value,0),extra:n(f("extra").value,0),uebertrag:n(f("uebertrag").value,0)};
+    if(kindVal!==kindDef)yr.kind=kindVal;
+    const buVal=n(f("bildung").value,0),buDef=(()=>{const P0=state.people[p],sv=P0.bildungBase,ys=P0.years||{},had=ys[y]&&Object.prototype.hasOwnProperty.call(ys[y],"bildung"),keep=had?ys[y].bildung:undefined;P0.bildungBase=next[p].bildungBase;if(had)delete ys[y].bildung;const v=bildungAnspruch(p,Number(y));if(had)ys[y].bildung=keep;P0.bildungBase=sv;return v;})();
+    if(buVal!==buDef)yr.bildung=buVal;
+    next[p].years[y]=yr;
+  });
+  setDlg.close();writePeople(next);toast("Einstellungen gespeichert.");
+});
+$("cancelSet").addEventListener("click",()=>setDlg.close());
+
+/* Export */
+function isoWeek(d){const t=new Date(d.getFullYear(),d.getMonth(),d.getDate());t.setDate(t.getDate()+3-((t.getDay()+6)%7));const w1=new Date(t.getFullYear(),0,4);return 1+Math.round(((t-w1)/864e5-3+((w1.getDay()+6)%7))/7);}
+const dm=d=>pad(d.getDate())+"."+pad(d.getMonth()+1)+".";
+function exportText(sel){
+  const y=state.year,ps=sel==="beide"?PEOPLE:[sel],out=["Urlaub "+y];
+  ps.forEach(p=>{
+    const a=account(p,y);
+    out.push("",nm(p));
+    const ts=state.trips.filter(t=>isPlan(t)&&t.who.indexOf(p)>=0&&inYear(t,y)).sort((a,b)=>a.start<b.start?-1:1);
+    if(!ts.length)out.push("Noch nichts eingetragen");
+    ts.forEach(t=>{
+      const s=parse(t.start),e=parse(t.end),ks=isoWeek(s),ke=isoWeek(e);
+      const kw=ks===ke?"KW "+ks:"KW "+ks+" bis "+ke;
+      const rg=t.start===t.end?dm(s)+s.getFullYear():dm(s)+(s.getFullYear()!==e.getFullYear()?s.getFullYear():"")+" bis "+dm(e)+e.getFullYear();
+      out.push("• "+rg+" ("+kw+"), "+plural(tripDays(t,p,y),"Tag","Tage")+(typeOf(t)==="bildung"?", Bildungsurlaub":""));
+    });
+    out.push("Resturlaub: "+plural(a.rest,"Tag","Tage")+" nicht verplant (von "+a.total+")");
+  });
+  return out.join("\n");
+}
+const expDlg=$("expDlg");
+function expSel(){const c=expDlg.querySelector('input[name="exp"]:checked');return c?c.value:"beide";}
+const MAIL="urlaub_R366@group.apple.com";
+const FRIST={2027:{frist:"2026-11-04",rueck:"2026-11-15"}};
+let antSel={};
+const dmy=d=>pad(d.getDate())+"."+pad(d.getMonth()+1)+"."+String(d.getFullYear()).slice(2);
+const dmY=s=>{const d=parse(s);return pad(d.getDate())+"."+pad(d.getMonth()+1)+"."+d.getFullYear();};
+function expMode(){const c=expDlg.querySelector('input[name="expMode"]:checked');return c?c.value:"notes";}
+function antragDays(t,y){let n=0;eachDay(t.start,t.end,d=>{if(d.getFullYear()!==y)return;const w=d.getDay();if(w>=1&&w<=5&&!isHol(ME,d)&&!auSet[ME].has(iso(d)))n++;});return n;}
+function antTrips(y){return state.trips.filter(t=>typeOf(t)==="urlaub"&&t.who.indexOf(ME)>=0&&inYear(t,y)).sort((a,b)=>a.start<b.start?-1:1);}
+function antOn(t){return antSel[t.id]!=null?antSel[t.id]:t.status!=="genehmigt";}
+function antYear(){return Number($("antYear").value)||state.year;}
+function renderAntList(){
+  const y=antYear(),box=$("antList");box.textContent="";
+  const ts=antTrips(y);
+  if(!ts.length){box.append(el("div","empty","Für "+y+" hast du noch keinen Urlaub eingetragen."));return;}
+  ts.forEach(t=>{
+    const l=el("label","check");const i=document.createElement("input");i.type="checkbox";i.checked=antOn(t);
+    i.addEventListener("change",()=>{antSel[t.id]=i.checked;refreshAntrag();});
+    const sp=el("span",null,fmtRange(t.start,t.end));
+    sp.append(el("small",null,plural(antragDays(t,y),"Tag","Tage")+", "+({geplant:"Geplant",beantragt:"Beantragt",genehmigt:"Genehmigt"}[t.status]||"Geplant")+(t.title?", "+t.title:"")));
+    l.append(i,sp);box.append(l);
+  });
+}
+function antragText(){
+  const y=antYear(),ts=antTrips(y).filter(antOn);
+  const L=["Moin liebe Urlaubskommission,","","Für "+y+" würde ich gerne wie folgt Urlaub einreichen:"];
+  ts.forEach((t,i)=>L.push((i+1)+". Urlaub: "+dmy(parse(t.start))+" - "+dmy(parse(t.end))+" - "+plural(antragDays(t,y),"Tag","Tage")));
+  const rto=$("antRto").value.trim();if(rto)L.push("","RTO Wünsche: "+rto);
+  const asp=$("antAsp").value.trim();
+  if(asp){L.push("","Folgende Aspekte sind bei meiner Urlaubsplanung zu beachten:");asp.split(/\n+/).forEach(a=>{a=a.replace(/^[-•]\s*/,"").trim();if(a)L.push("- "+a);});}
+  L.push("","Lieben Gruß",$("antName").value.trim()||nm(ME));
+  return L.join("\n");
+}
+function refreshAntrag(){
+  const y=antYear(),ts=antTrips(y).filter(antOn),C=$("antCheck");C.textContent="";
+  const line=(cls,t)=>C.append(el("span",cls,t));
+  const sum=ts.reduce((a,t)=>a+antragDays(t,y),0),tot=account(ME,y).total;
+  line("","Ausgewählt: "+plural(sum,"Tag","Tage")+" von "+tot+" Tagen Anspruch "+y+". Eine volle Woche Mo bis So zählt als 5 Tage.");
+  if(sum<25)line("bad","Laut BV Urlaub müssen mindestens 25 Tage im Jahr genommen werden, es fehlen noch "+(25-sum)+".");
+  else if(sum<30)line("warn","Empfehlung: 30 Tage verplanen, damit deine Wunschtermine bestmöglich gesichert sind.");
+  else line("ok","Mindestens 25 Tage und Empfehlung von 30 Tagen erfüllt.");
+  if(sum>tot)line("bad","Du beantragst mehr Tage, als du Anspruch hast.");
+  ts.forEach(t=>{const ns=state.kollegen.filter(k=>overlap(t,k)).map(k=>k.name);if(ns.length)line("bad","Überschneidung: "+fmtRange(t.start,t.end)+" mit "+ns.join(", ")+". Am besten vorher absprechen.");});
+  const F=FRIST[y];
+  if(F){const left=Math.round((parse(F.frist)-parse(todayIso))/864e5);
+    line(left<0?"bad":left<=7?"warn":"","Einsendeschluss "+dmY(F.frist)+(left<0?", vorbei. Der Antrag wird nur nachrangig berücksichtigt.":left===0?", heute.":", noch "+plural(left,"Tag","Tage")+".")+" Rückmeldung bis "+dmY(F.rueck)+".");}
+  line("","Bitte nicht während der Arbeitszeit planen und einreichen.");
+  const txt=antragText();$("expText").value=txt;
+  $("mailExp").href="mailto:"+MAIL+"?subject="+encodeURIComponent("Urlaub "+y)+"&body="+encodeURIComponent(txt);
+}
+function saveAntFields(){
+  const nmv=$("antName").value.trim(),asp=$("antAsp").value.trim(),P=state.people[ME];
+  if((P.mailName||"")===nmv&&(P.aspekte||"")===asp)return;
+  const next=clone(state.people);next[ME].mailName=nmv;next[ME].aspekte=asp;writePeople(next);
+}
+function refreshExp(){
+  recompute();
+  const m=expMode();
+  $("expNotes").hidden=m!=="notes";$("expAntrag").hidden=m!=="antrag";$("expAntrag").style.display=m==="antrag"?"flex":"none";
+  $("mailExp").hidden=m!=="antrag";$("antMark").hidden=m!=="antrag";
+  if(m==="notes")$("expText").value=exportText(expSel());else refreshAntrag();
+}
+$("openExport").addEventListener("click",()=>{
+  $("expC").textContent=nm("christian");$("expJ").textContent=nm("julia");$("shareExp").hidden=!navigator.share;
+  const ny=new Date().getFullYear(),def=new Date().getMonth()>=8?ny+1:ny,sel=$("antYear");sel.textContent="";
+  [ny,ny+1].forEach(v=>{const o=el("option",null,String(v));o.value=v;if(v===def)o.selected=true;sel.append(o);});
+  $("antName").value=state.people[ME].mailName||nm(ME);$("antAsp").value=state.people[ME].aspekte||"";$("antRto").value="";antSel={};
+  recompute();renderAntList();refreshExp();expDlg.showModal();
+});
+$("expSeg").addEventListener("change",refreshExp);
+$("expModeSeg").addEventListener("change",refreshExp);
+$("antYear").addEventListener("change",()=>{recompute();renderAntList();refreshAntrag();});
+["antName","antAsp","antRto"].forEach(id=>$(id).addEventListener("input",refreshAntrag));
+$("mailExp").addEventListener("click",()=>{saveAntFields();toast("Mail wird geöffnet. Falls nichts passiert, nutze Kopieren.");});
+$("antMark").addEventListener("click",async()=>{
+  const y=antYear(),ts=antTrips(y).filter(antOn).filter(t=>(t.status||"geplant")==="geplant");
+  if(!ts.length){toast("Keine geplanten Urlaube ausgewählt.");return;}
+  for(const t of ts)await writeTrip(Object.assign({},t,{type:"urlaub",status:"beantragt"}));
+  toast(plural(ts.length,"Urlaub","Urlaube")+" als beantragt markiert.");setTimeout(()=>{recompute();renderAntList();refreshAntrag();},300);
+});
+$("closeExp").addEventListener("click",()=>expDlg.close());
+$("copyExp").addEventListener("click",async()=>{
+  const txt=$("expText").value;
+  if(expMode()==="antrag")saveAntFields();
+  const okMsg=expMode()==="antrag"?"Kopiert. Empfänger: "+MAIL+", Betreff: Urlaub "+antYear():"Kopiert. Jetzt in Notizen einfügen.";
+  try{await navigator.clipboard.writeText(txt);toast(okMsg);return;}catch(e){}
+  const ta=$("expText");ta.focus();ta.select();ta.setSelectionRange(0,txt.length);
+  let ok=false;try{ok=document.execCommand("copy");}catch(e){}
+  toast(ok?okMsg:"Text ist markiert, bitte über Kopieren übernehmen.");
+});
+$("shareExp").addEventListener("click",async()=>{
+  if(expMode()==="antrag")saveAntFields();
+  try{await navigator.share({title:"Urlaub "+(expMode()==="antrag"?antYear():state.year),text:$("expText").value});}
+  catch(e){if(!e||e.name!=="AbortError")toast("Teilen klappt hier nicht, bitte Kopieren nutzen.");}
+});
+
+/* Kollegen */
+function overlap(a,b){return a.start<=b.end&&b.start<=a.end?{start:a.start>b.start?a.start:b.start,end:a.end<b.end?a.end:b.end}:null;}
+function myTrips(){return state.trips.filter(t=>isPlan(t)&&t.who.indexOf(ME)>=0);}
+function validKol(k){return k&&typeof k.name==="string"&&k.name.trim()!==""&&/^\d{4}-\d{2}-\d{2}$/.test(k.start||"")&&/^\d{4}-\d{2}-\d{2}$/.test(k.end||"");}
+function renderKol(y){
+  const ban=$("kolBanner"),list=$("kolList");ban.textContent="";list.textContent="";
+  const ys=String(y),cl=[];
+  myTrips().forEach(t=>state.kollegen.forEach(k=>{const o=overlap(t,k);if(o&&o.start.slice(0,4)<=ys&&o.end.slice(0,4)>=ys)cl.push({t:t,k:k,o:o});}));
+  cl.sort((a,b)=>a.o.start<b.o.start?-1:1);
+  const b=el("div","banner"+(cl.length?" bad":""));
+  if(cl.length){
+    b.append(plural(cl.length,"Überschneidung","Überschneidungen")+" mit Urlauben von "+nm(ME)+":");
+    const ul=el("ul");cl.forEach(c=>ul.append(el("li",null,(c.t.title||"Urlaub")+" und "+c.k.name+": "+fmtRange(c.o.start,c.o.end))));b.append(ul);
+  }else b.textContent=state.kollegen.length?"Keine Überschneidungen zwischen "+nm(ME)+" und den Kollegen in "+y+".":"Noch keine Kollegen eingetragen. Importiere einen Screenshot oder trage Urlaube von Hand ein.";
+  ban.append(b);
+  state.kollegen.filter(k=>inYear(k,y)).sort((a,b)=>a.start<b.start?-1:a.start>b.start?1:0).forEach(k=>{
+    const r=el("button","trip"+(k.end<todayIso?" past":""));r.type="button";
+    r.append(el("div","t",k.name));
+    r.append(el("div","d",fmtRange(k.start,k.end)+(k.note?", "+k.note:"")));
+    const right=el("div","r");
+    if(myTrips().some(t=>overlap(t,k)))right.append(el("span","pill bad","Überschneidung"));
+    r.append(right);
+    r.addEventListener("click",()=>openKol(k));
+    list.append(r);
+  });
+}
+function writeKol(k){return save("kollegen",k.id,{name:k.name,start:k.start,end:k.end,note:k.note||"",updated:Date.now()});}
+function removeKol(id){return save("kollegen",id,null);}
+const kolDlg=$("kolDlg"),kolForm=$("kolForm");let kolEditing=null;
+function kolRange(){let s=kolForm.start.value,e=kolForm.end.value;if(!s||!e)return null;if(e<s){const x=s;s=e;e=x;}return{start:s,end:e};}
+function kolPreview(){
+  const P=$("kolPreview"),r=kolRange();P.textContent="";P.style.color="";
+  if(!r)return;
+  const ts=myTrips().filter(t=>overlap(t,r));
+  if(ts.length){P.style.color="var(--bad)";P.textContent="Überschneidung mit "+nm(ME)+": "+ts.map(t=>(t.title||"Urlaub")+" ("+fmtRange(t.start,t.end)+")").join(", ");}
+  else P.textContent="Keine Überschneidung mit "+nm(ME)+".";
+}
+function openKol(k){
+  kolEditing=k||null;
+  $("kolTitle").textContent=k?"Kollegenurlaub bearbeiten":"Kollegenurlaub hinzufügen";
+  $("kolDel").style.visibility=k?"visible":"hidden";
+  kolForm.name.value=k?k.name:"";kolForm.start.value=k?k.start:todayIso;kolForm.end.value=k?k.end:todayIso;kolForm.note.value=k?k.note||"":"";
+  kolPreview();kolDlg.showModal();
+}
+kolForm.addEventListener("input",e=>{if(e.target.name==="start"&&kolForm.end.value<kolForm.start.value)kolForm.end.value=kolForm.start.value;kolPreview();});
+kolForm.addEventListener("submit",e=>{
+  e.preventDefault();const r=kolRange(),name=kolForm.name.value.trim();
+  if(!r||!name){toast("Bitte Name und Zeitraum angeben.");return;}
+  kolDlg.close();
+  writeKol({id:kolEditing?kolEditing.id:newId(),name:name.slice(0,60),start:r.start,end:r.end,note:kolForm.note.value.trim()});
+  toast("Gespeichert.");
+});
+$("kolCancel").addEventListener("click",()=>kolDlg.close());
+$("kolDel").addEventListener("click",()=>{if(!kolEditing)return;if(!confirm("Urlaub von "+kolEditing.name+" löschen?"))return;const id=kolEditing.id;kolDlg.close();removeKol(id);toast("Gelöscht.");});
+$("kolAdd").addEventListener("click",()=>openKol(null));
+
+/* Import */
+let impFiles=[],impRows=[],impCtl=null;const IMG_MAX=3;
+function fileToDataUrl(f){return new Promise((res,rej)=>{const u=URL.createObjectURL(f),img=new Image();img.onload=()=>{const sc=Math.min(1,1600/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*sc);c.height=Math.round(img.height*sc);c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL("image/jpeg",0.85));};img.onerror=()=>{URL.revokeObjectURL(u);rej(new Error("bild"));};img.src=u;});}
+function parseJsonArray(t){t=String(t||"").replace(/```(?:json)?/gi,"");const a=t.indexOf("["),b=t.lastIndexOf("]");if(a<0||b<a)return null;try{return JSON.parse(t.slice(a,b+1));}catch(e){return null;}}
+const impDlg=$("impDlg");
+function impMode(){const c=impDlg.querySelector('input[name="imp"]:checked');return c?c.value:"bild";}
+function impStatus(t,bad){const s=$("impStatus");s.textContent=t;s.style.color=bad?"var(--bad)":"";}
+function impToggle(){const m=impMode();$("impBild").hidden=m!=="bild";$("impTextWrap").hidden=m!=="text";}
+function openImport(){
+  impRows=[];renderRev();impToggle();
+  $("impRead").disabled=false;impStatus("Screenshot oder Text wählen und auf „Auslesen“ tippen. Du kannst alles vor dem Übernehmen prüfen.");
+  impDlg.showModal();
+}
+$("kolImport").addEventListener("click",openImport);
+$("impSeg").addEventListener("change",impToggle);
+$("impFile").addEventListener("change",e=>{
+  impFiles=Array.from(e.target.files||[]).slice(0,IMG_MAX);
+  const th=$("impThumbs");th.textContent="";
+  impFiles.forEach(f=>{const i=document.createElement("img");i.alt="";i.src=URL.createObjectURL(f);th.append(i);});
+  if((e.target.files||[]).length>impFiles.length)impStatus("Es werden die ersten "+impFiles.length+" Bilder ausgelesen.");
+});
+function renderRev(){
+  const box=$("impRev");box.textContent="";
+  impRows.forEach((r,i)=>{
+    const row=el("div","revrow");
+    const cb=document.createElement("input");cb.type="checkbox";cb.checked=r.on;cb.setAttribute("aria-label","Übernehmen");
+    cb.addEventListener("change",()=>{r.on=cb.checked;updSave();});
+    const f=el("div","flds");
+    const mk=(type,key)=>{const x=document.createElement("input");x.type=type;x.value=r[key];x.addEventListener("input",()=>{r[key]=x.value;note();});return x;};
+    f.append(mk("text","name"),mk("date","start"),mk("date","end"));
+    const sm=el("small");
+    function note(){
+      const s=r.start<=r.end?r.start:r.end,e=r.start<=r.end?r.end:r.start;
+      const hit=r.start&&r.end?myTrips().filter(t=>overlap(t,{start:s,end:e})):[];
+      sm.className=hit.length?"bad":"";
+      sm.textContent=(r.dup?"Schon vorhanden. ":"")+(hit.length?"Überschneidung mit "+hit.map(t=>t.title||"Urlaub").join(", "):"Keine Überschneidung");
+    }
+    note();
+    row.append(cb,f,sm);box.append(row);
+  });
+  updSave();
+}
+function updSave(){const n=impRows.filter(r=>r.on).length;$("impSave").disabled=!n;$("impSave").textContent=n?n+" übernehmen":"Übernehmen";}
+$("impRead").addEventListener("click",async()=>{
+  const m=impMode(),txt=$("impText").value.trim();
+  if(m==="bild"&&!impFiles.length){impStatus("Bitte zuerst einen Screenshot auswählen.",true);return;}
+  if(m==="text"&&!txt){impStatus("Bitte zuerst Text einfügen.",true);return;}
+  const prompt=[
+    "Lies aus "+(m==="bild"?"den angehängten Screenshots":"dem Text unten")+" die Urlaube bzw. geplanten Abwesenheiten von Arbeitskollegen aus.",
+    "Heute ist "+todayIso+". Fehlt das Jahr, nimm "+state.year+". Eine Kalenderwoche (KW) meint Montag bis Sonntag der ISO Woche.",
+    "Lass Einträge von "+nm(ME)+" selbst weg. Fasse aufeinanderfolgende Tage einer Person zu einem Zeitraum zusammen.",
+    "Antworte nur mit einem JSON Array von Objekten mit name, start und end (Datum als YYYY-MM-DD), zum Beispiel [{\"name\":\"Max\",\"start\":\""+state.year+"-03-12\",\"end\":\""+state.year+"-03-18\"}]. Keine Erklärungen, keine Quellen. Wenn nichts erkennbar ist, antworte mit []."
+  ].join("\n")+(m==="text"?"\n\nText:\n"+txt.slice(0,20000):"");
+  impCtl=new AbortController();
+  const btn=$("impRead");btn.disabled=true;impStatus("Wird mit Perplexity ausgelesen. Das kann etwas dauern.");
+  try{
+    const images=m==="bild"?await Promise.all(impFiles.map(fileToDataUrl)):[];
+    const r=await fetch("/.netlify/functions/kollegen-import?_="+Date.now(),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt:prompt,images:images}),signal:impCtl.signal});
+    const data=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(data.error||"Fehler "+r.status);
+    const res=parseJsonArray(data.text);
+    if(!res){impRows=[];renderRev();impStatus("Es konnten keine Urlaube erkannt werden. Versuch einen schärferen oder kleineren Ausschnitt.",true);return;}
+    const re=/^\d{4}-\d{2}-\d{2}$/;
+    impRows=res.filter(x=>x&&typeof x.name==="string"&&x.name.trim()&&re.test(x.start||"")&&re.test(x.end||x.start||"")).map(x=>{
+      let s=x.start,e=x.end||x.start;if(e<s){const t=s;s=e;e=t;}
+      const name=x.name.trim().slice(0,60);
+      const dup=state.kollegen.some(k=>k.name.toLowerCase()===name.toLowerCase()&&k.start===s&&k.end===e);
+      return{name:name,start:s,end:e,on:!dup,dup:dup};
+    });
+    renderRev();
+    impStatus(impRows.length?plural(impRows.length,"Eintrag","Einträge")+" erkannt. Bitte kurz prüfen und bei Bedarf korrigieren.":"Es wurden keine Urlaube erkannt.",!impRows.length);
+  }catch(e){impStatus(e&&e.name==="AbortError"?"Abgebrochen.":"Auslesen fehlgeschlagen: "+((e&&e.message)||"unbekannter Fehler"),true);}
+  finally{btn.disabled=false;impCtl=null;}
+});
+$("impSave").addEventListener("click",async()=>{
+  const rows=impRows.filter(r=>r.on&&r.name.trim()&&r.start&&r.end);
+  $("impSave").disabled=true;
+  let n=0;
+  for(const r of rows){let s=r.start,e=r.end;if(e<s){const t=s;s=e;e=t;}if(await writeKol({id:newId(),name:r.name.trim().slice(0,60),start:s,end:e,note:""}))n++;}
+  impDlg.close();toast(plural(n,"Urlaub","Urlaube")+" übernommen.");
+});
+$("impClose").addEventListener("click",()=>{if(impCtl)impCtl.abort();impDlg.close();});
+
+/* Datensicherung */
+const BAK="urlaubstage:backup:",BAKLS="urlaubstage:lastBackup",bakDlg=$("bakDlg");
+function toMap(arr){const o={};arr.forEach(x=>{const c=clone(x);delete c.id;o[x.id]=c;});return o;}
+function snapshot(){return{app:"urlaubstage",version:1,created:new Date().toISOString(),people:clone(state.people),trips:toMap(state.trips),kollegen:toMap(state.kollegen)};}
+function validBackup(b){return !!(b&&typeof b==="object"&&b.people&&typeof b.people==="object"&&b.trips&&typeof b.trips==="object"&&b.kollegen&&typeof b.kollegen==="object");}
+function countOf(b){return plural(Object.keys(b.trips).length,"Eintrag","Einträge")+", "+plural(Object.keys(b.kollegen).length,"Kollegenurlaub","Kollegenurlaube");}
+async function autoBackup(){
+  if(!db||state.mode!=="sync"||pendingWrites>0)return;
+  if(!state.trips.length&&!state.kollegen.length)return;
+  const day=iso(new Date());let last="";try{last=localStorage.getItem(BAKLS)||"";}catch(e){}
+  if(last===day)return;
+  try{localStorage.setItem(BAKLS,day);}catch(e){}
+  try{await db.collection(COL).doc(BAK+day.slice(8,10)).set({value:snapshot(),date:day,updated:Date.now()});}
+  catch(e){console.error(e);try{localStorage.removeItem(BAKLS);}catch(x){}}
+}
+async function restore(b,label){
+  if(!validBackup(b)){toast("Diese Datei ist keine gültige Sicherung.");return;}
+  if(!confirm("Stand vom "+label+" wiederherstellen? Der aktuelle Stand wird vorher gesichert und dann ersetzt."))return;
+  const cur=snapshot();
+  try{
+    if(db){
+      pendingWrites++;
+      try{
+        await db.collection(COL).doc(BAK+"vorher").set({value:cur,date:iso(new Date()),updated:Date.now()});
+        const batch=db.batch(),now=Date.now();
+        batch.set(ref("people"),{value:clone(b.people),updated:now});
+        batch.set(ref("trips"),{value:clone(b.trips),updated:now});
+        batch.set(ref("kollegen"),{value:clone(b.kollegen),updated:now});
+        await batch.commit();
+      }finally{pendingWrites--;}
+      lastSig="";await poll();
+    }else{
+      try{localStorage.setItem("urlaubstage:vorher",JSON.stringify(cur));}catch(e){}
+      PEOPLE.forEach(p=>{if(b.people[p])state.people[p]=Object.assign(clone(DEFAULTS[p]),b.people[p]);});
+      state.trips=Object.keys(b.trips).map(id=>Object.assign({id:id},b.trips[id])).filter(validTrip);
+      state.kollegen=Object.keys(b.kollegen).map(id=>Object.assign({id:id},b.kollegen[id])).filter(validKol);
+      saveLocal();render();
+    }
+    bakDlg.close();toast("Wiederhergestellt.");
+  }catch(e){dbFail(e);}
+}
+async function downloadBackup(){
+  const name="away_sicherung_"+iso(new Date()).replace(/-/g,"_")+".json";
+  const blob=new Blob([JSON.stringify(snapshot(),null,2)],{type:"application/json"});
+  try{
+    const f=new File([blob],name,{type:"application/json"});
+    if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:"Away Sicherung"});return;}
+  }catch(e){if(e&&e.name==="AbortError")return;}
+  const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),3000);
+}
+async function renderBakList(){
+  const box=$("bakList");box.textContent="";
+  if(!db){box.append(el("div","empty","Automatische Sicherungen gibt es erst, wenn Firebase eingerichtet ist."));return;}
+  box.append(el("div","empty","Wird geladen."));
+  try{
+    const FP=firebase.firestore.FieldPath.documentId();
+    const qs=await db.collection(COL).where(FP,">=",BAK).where(FP,"<",BAK+"\uf8ff").get();
+    const items=qs.docs.map(d=>{const x=d.data()||{};return{id:d.id,date:x.date||"",val:parseValue(x.value)};}).filter(x=>x.date&&validBackup(x.val)).sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:0);
+    box.textContent="";
+    if(!items.length){box.append(el("div","empty","Noch keine automatische Sicherung vorhanden. Die erste entsteht beim nächsten Abgleich, sobald Einträge da sind."));return;}
+    items.forEach(x=>{
+      const r=el("button","trip");r.type="button";const d=parse(x.date);
+      r.append(el("div","t",(x.id===BAK+"vorher"?"Vor der letzten Wiederherstellung, ":"")+WDS[d.getDay()]+", "+dmY(x.date)));
+      r.append(el("div","d",countOf(x.val)));
+      const right=el("div","r");right.append(el("span","status solid","Wiederherstellen"));r.append(right);
+      r.addEventListener("click",()=>restore(x.val,dmY(x.date)));
+      box.append(r);
+    });
+  }catch(e){console.error(e);box.textContent="";box.append(el("div","empty","Sicherungen konnten nicht geladen werden."));}
+}
+$("openBak").addEventListener("click",()=>{
+  setDlg.close();
+  let last="";try{last=localStorage.getItem(BAKLS)||"";}catch(e){}
+  $("bakInfo").textContent=(db?"Einmal am Tag wird automatisch eine Sicherung in Firebase angelegt, die letzten 31 Tage bleiben erhalten."+(last?" Letzte Sicherung von diesem Gerät: "+dmY(last)+".":"")+" Zusätzlich kannst du eine Datei speichern, am besten in iCloud Drive.":"Firebase ist nicht eingerichtet. Speichere deshalb regelmäßig eine Sicherungsdatei, am besten in iCloud Drive.");
+  bakDlg.showModal();renderBakList();
+});
+$("bakDown").addEventListener("click",downloadBackup);
+$("bakFile").addEventListener("change",e=>{
+  const f=e.target.files&&e.target.files[0];e.target.value="";if(!f)return;
+  const rd=new FileReader();
+  rd.onload=()=>{let b=null;try{b=JSON.parse(rd.result);}catch(x){}const c=b&&b.created?dmY(String(b.created).slice(0,10)):"der Datei";restore(b,c);};
+  rd.readAsText(f);
+});
+$("bakClose").addEventListener("click",()=>bakDlg.close());
+
+/* Navigation */
+$("prevY").addEventListener("click",()=>{state.year--;state.bvIdx=null;render();});
+$("nextY").addEventListener("click",()=>{state.year++;state.bvIdx=null;render();});
+$("addBtn").addEventListener("click",()=>openTrip(null));
+$("openSettings").addEventListener("click",openSettings);
+$("months").addEventListener("click",e=>{
+  const b=e.target.closest(".day");if(!b)return;
+  const k=b.dataset.d;
+  const hit=state.trips.filter(t=>t.start<=k&&t.end>=k).sort((a,b)=>(typeOf(a)==="urlaub")-(typeOf(b)==="urlaub"))[0];
+  if(hit)openTrip(hit);else openTrip(null,k);
+});
+
+render();
+initDb();
+})();
+</script>
+</body>
+</html>
