@@ -4,7 +4,7 @@ Urlaubsplanung für Christian und Julia: Urlaub, Bildungsurlaub, Krankheitstage 
 
 ## Einrichtung
 
-1. In `index.html` oben bei `FIREBASE_CONFIG` die Werte `apiKey`, `messagingSenderId` und `appId` aus einer deiner anderen Apps eintragen (Projekt homedashboard-8d951).
+1. Firebase ist bereits eingetragen (Projekt homedashboard-8d951).
 2. Repo mit Netlify verbinden.
 3. In Netlify unter Umgebungsvariablen setzen:
    * `PERPLEXITY_API_KEY` = dein Perplexity Schlüssel
