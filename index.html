@@ -50,8 +50,9 @@ button{cursor:pointer}
 .wrap{max-width:980px;margin:0 auto;padding:20px 18px 120px}
 
 header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px}
-h1{font-family:"Fraunces",Georgia,serif;font-weight:400;font-size:clamp(2.1rem,7vw,3.2rem);line-height:1;margin:0;letter-spacing:-.01em}
-.logo{width:.85em;height:.85em;border-radius:22%;vertical-align:-.06em;margin-right:.28em}
+h1{font-family:"Fraunces",Georgia,serif;font-weight:400;font-size:clamp(2.1rem,7vw,3.2rem);line-height:1;margin:0;letter-spacing:-.01em;display:grid;grid-template-columns:auto auto;column-gap:.28em;align-items:center;justify-content:start}
+h1 .by{grid-column:2;font-family:"Figtree",system-ui,sans-serif;font-size:.78rem;letter-spacing:.06em;color:var(--muted);margin-top:4px;font-weight:500}
+.logo{width:.85em;height:.85em;border-radius:22%;grid-row:1}
 .bakbtns{display:flex;gap:8px;flex-wrap:wrap}
 .bakfile{position:relative;display:inline-flex;align-items:center;cursor:pointer}
 .bakfile input{position:absolute;opacity:0;width:1px;height:1px}
@@ -116,6 +117,11 @@ h2{font-family:"Fraunces",Georgia,serif;font-weight:400;font-size:1.5rem;margin:
 .day.cj{background:linear-gradient(135deg,var(--c) 50%,var(--j) 50%);color:#fff}
 .day.tent{opacity:.5}
 .day.sk{background:transparent;box-shadow:inset 0 0 0 2px var(--sc);color:var(--sc);font-weight:600;opacity:1}
+.day.au{background:color-mix(in srgb,var(--sc) 24%,transparent)}
+.day .tri{position:absolute;top:2px;left:2px;width:0;height:0;border-left:5px solid var(--hol);border-bottom:5px solid transparent;pointer-events:none}
+.day .x{position:absolute;top:0;right:2px;font-size:.62rem;line-height:1;font-weight:700;color:var(--bad);pointer-events:none}
+.keys .tri{width:0;height:0;border-left:7px solid var(--hol);border-bottom:7px solid transparent;display:inline-block}
+.keys .x{color:var(--bad);font-weight:700;font-size:.9rem;line-height:1}
 .day.kd{background:transparent;box-shadow:inset 0 0 0 2px var(--sc);color:var(--sc);font-weight:600;border-radius:50%;opacity:1}
 .day.today{outline:1.5px solid var(--ink);outline-offset:-1px}
 
@@ -146,7 +152,7 @@ dialog::backdrop{background:rgba(20,18,14,.4)}
 .dlg h2{margin:0}
 label.f{display:flex;flex-direction:column;gap:5px;font-size:.88rem;color:var(--muted)}
 .f input,.f select,.f textarea{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:10px 12px;font-size:1rem;color:var(--ink);width:100%}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
 .seg{display:flex;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg)}
 .seg label{flex:1;text-align:center;position:relative}
 .seg input{position:absolute;opacity:0;inset:0}
@@ -159,6 +165,7 @@ label.f{display:flex;flex-direction:column;gap:5px;font-size:.88rem;color:var(--
 .check small{display:block;color:var(--muted);font-size:.8rem}
 .pick{display:flex;flex-wrap:wrap;gap:5px}
 .pk{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:6px 8px;font-size:.82rem;color:var(--muted)}
+.pk.off{opacity:.45;cursor:default;border-style:dashed}
 .pk.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .preview{font-size:.9rem;background:var(--bg);border-radius:10px;padding:10px 12px;color:var(--muted)}
 .preview b{color:var(--ink)}
@@ -178,9 +185,67 @@ legend{padding:0 6px;font-weight:600}
 .days input:checked+span{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .days input:focus-visible+span{outline:2px solid var(--c)}
 .exptext{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:12px;font-size:.92rem;line-height:1.55;resize:vertical;color:var(--ink)}
+.actions{flex-wrap:wrap}
+.actions .r{flex-wrap:wrap;justify-content:flex-end}
+.ghost,.save,.danger{white-space:nowrap;font-size:.95rem}
+dialog{overflow-x:hidden}
+[hidden]{display:none!important}
+html,body{overflow-x:hidden;max-width:100%}
+fieldset{min-width:0;max-width:100%}
+.row{align-items:end}
+.f input[type=date]{display:block;width:100%;box-sizing:border-box;text-align:left}
+.f input[type=date]::-webkit-date-and-time-value{text-align:left;margin:0}
+.f input[type=date]::-webkit-calendar-picker-indicator{margin-left:0}
+.dlg{overflow-x:hidden}
+.datebox{position:relative;display:flex;align-items:center;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:10px 12px;min-height:46px;font-size:1rem;color:var(--ink);overflow:hidden;min-width:0}
+.datebox:focus-within{outline:2px solid var(--ink);outline-offset:1px}
+.datebox .dv{pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.f .datebox input[type=date]{position:absolute;inset:0;width:100%;height:100%;min-height:0;opacity:0;margin:0;padding:0;border:0;-webkit-appearance:none;appearance:none}
+label.f{min-width:0}
+.row label.f{overflow:hidden;padding:1px}
+.f input[type=date]{width:100%;min-width:0;max-width:100%;-webkit-appearance:none;appearance:none;font-size:.95rem;padding:10px}
+.ver{display:block;margin-top:4px;opacity:.7}
+dialog{overscroll-behavior:contain;touch-action:pan-y}
+.dlg,.dlg>*{min-width:0;max-width:100%}
+.dlg input,.dlg select,.dlg textarea{max-width:100%}
+.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.days span{width:auto;display:block}
+.row>*{min-width:0}
+.f input[type=date]{min-width:0;max-width:100%;-webkit-appearance:none;appearance:none;min-height:46px}
+.seg label{display:flex}
+.seg span{flex:1;display:flex;align-items:center;justify-content:center;line-height:1.2}
+@media (max-width:560px){
+  .row.dates{grid-template-columns:minmax(0,1fr)}
+  .dlg .actions{display:block}
+  .dlg .actions .danger{margin-bottom:6px}
+  .dlg .actions .r{width:100%;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-left:0}
+  .dlg .actions .r>*{display:inline-flex;justify-content:center;align-items:center;text-align:center;padding:10px 12px;white-space:normal;border-radius:12px;font-size:.9rem;min-height:44px}
+  .dlg .actions .r>.save:last-child:nth-child(odd){grid-column:1 / -1}
+  .seg span{font-size:.85rem;padding:9px 4px}
+}
+#expDlg .actions{display:block}
+#expDlg .actions .r{width:100%;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-left:0}
+#expDlg .actions .r>*{display:inline-flex;justify-content:center;align-items:center;text-align:center;padding:10px 12px;white-space:normal;border-radius:12px;font-size:.9rem;min-height:44px}
+#expDlg .actions .r>[hidden]{display:none}
+#expDlg .actions .save{grid-column:1 / -1;order:-1}
+#expDlg #closeExp{order:9}
 .toast{position:fixed;left:50%;top:calc(16px + env(safe-area-inset-top,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:.92rem;z-index:50;max-width:calc(100vw - 32px);display:none}
 .toast.show{display:block}
 
+.kgrp{border-bottom:1px solid var(--line)}
+.kgrp summary{list-style:none;display:grid;grid-template-columns:1fr auto auto;gap:2px 12px;align-items:center;padding:12px 4px;cursor:pointer}
+.kgrp summary::-webkit-details-marker{display:none}
+.kgrp summary:hover{background:var(--surface)}
+.kgrp .t{font-weight:600}
+.kgrp .d{color:var(--muted);font-size:.85rem;grid-column:1}
+.kgrp .pill{grid-column:2;grid-row:1 / span 2}
+.kgrp .chev{grid-column:3;grid-row:1 / span 2;color:var(--muted);font-size:1.1rem;transition:transform .15s}
+.kgrp[open] .chev{transform:rotate(90deg)}
+.krow{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;border:0;border-top:1px dashed var(--line);background:none;text-align:left;padding:9px 4px 9px 16px;font-size:.9rem}
+.krow:hover{background:var(--surface)}
+.krow.past{opacity:.5}
+.krow small{color:var(--muted);white-space:nowrap}
+.krow.bad span:first-child{color:var(--bad)}
 .kolbar{display:flex;gap:8px;flex-wrap:wrap}
 .banner{border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:12px;background:var(--surface);font-size:.92rem;color:var(--muted)}
 .banner.bad{border-color:var(--bad);color:var(--bad)}
@@ -229,6 +294,7 @@ a.ghost{text-decoration:none;color:inherit;display:inline-flex;align-items:cente
   .bvrow{grid-template-columns:1fr auto}
   .bvrow .pill{grid-column:2;justify-self:end}
 }
+@media (max-width:560px){.day .tri{border-left-width:4px;border-bottom-width:4px;top:1px;left:1px}.day .x{font-size:.55rem;right:1px}}
 @media (max-width:380px){ .months{grid-template-columns:1fr} }
 @media (prefers-reduced-motion:no-preference){ .day,.trip,.primary{transition:background .15s} }
 </style>
@@ -236,7 +302,7 @@ a.ghost{text-decoration:none;color:inherit;display:inline-flex;align-items:cente
 <body>
 <div class="wrap">
   <header>
-    <h1><img src="icon-192.png" alt="" class="logo">Away</h1>
+    <h1><img src="icon-192.png" alt="" class="logo"><span>Away</span><span class="by">by BierAmStrand</span></h1>
     <div class="headtools">
       <div class="yearnav"><button id="prevY" aria-label="Vorheriges Jahr">‹</button><span id="yearLabel"></span><button id="nextY" aria-label="Nächstes Jahr">›</button></div>
       <button class="iconbtn" id="openExport">Export</button>
@@ -277,6 +343,7 @@ a.ghost{text-decoration:none;color:inherit;display:inline-flex;align-items:cente
     <div class="list" id="list"></div>
   </section>
   <p class="foot" id="sync"><span class="dot"></span>Verbindung wird aufgebaut</p>
+  <p class="foot ver">Away Version 1.9</p>
 </div>
 
 <div class="dock"><button class="primary" id="addBtn">Eintragen</button></div>
@@ -286,7 +353,7 @@ a.ghost{text-decoration:none;color:inherit;display:inline-flex;align-items:cente
   <form class="dlg" id="kolForm" method="dialog">
     <h2 id="kolTitle">Kollegenurlaub</h2>
     <label class="f">Name<input name="name" required maxlength="60" autocomplete="off"></label>
-    <div class="row">
+    <div class="row dates">
       <label class="f">Von<input type="date" name="start" required></label>
       <label class="f">Bis<input type="date" name="end" required></label>
     </div>
@@ -334,7 +401,7 @@ a.ghost{text-decoration:none;color:inherit;display:inline-flex;align-items:cente
       <label><input type="radio" name="type" value="kindkrank"><span>Kind krank</span></label>
     </div>
     <label class="f">Titel<input name="title" id="titleIn" maxlength="80" autocomplete="off"></label>
-    <div class="row">
+    <div class="row dates">
       <label class="f">Von<input type="date" name="start" required></label>
       <label class="f">Bis<input type="date" name="end" required></label>
     </div>
@@ -350,8 +417,8 @@ a.ghost{text-decoration:none;color:inherit;display:inline-flex;align-items:cente
         <label><input type="radio" name="status" value="genehmigt"><span>Genehmigt</span></label>
       </div>
     </div>
-    <div class="only-sick">
-      <div class="seglabel">An welchen Tagen hättest du gearbeitet?</div>
+    <div id="pickWrap">
+      <div class="seglabel" id="pickLabel">An welchen Tagen hättest du gearbeitet?</div>
       <div class="pick" id="pick"></div>
     </div>
     <label class="check only-sick"><input type="checkbox" name="au"><span>Mit ärztlicher Bescheinigung<small>AU bzw. eAU oder Attest für das Kind</small></span></label>
@@ -424,8 +491,8 @@ a.ghost{text-decoration:none;color:inherit;display:inline-flex;align-items:cente
     <textarea id="expText" class="exptext" rows="12" readonly></textarea>
     <div class="actions"><div class="r">
       <button type="button" class="ghost" id="closeExp">Schließen</button>
-      <a class="ghost" id="mailExp" hidden target="_blank" rel="noopener">In Mail öffnen</a>
-      <button type="button" class="ghost" id="antMark" hidden>Als beantragt markieren</button>
+      <a class="ghost" id="mailExp" hidden target="_blank" rel="noopener">Mail öffnen</a>
+      <button type="button" class="ghost" id="antMark" hidden>Als beantragt</button>
       <button type="button" class="ghost" id="shareExp" hidden>Teilen</button>
       <button type="button" class="save" id="copyExp">Kopieren</button>
     </div></div>
@@ -657,7 +724,7 @@ function renderBV(y){
       if(r[2]>r[3])any=true;
       row.append(lab,num,el("span","pill "+st[0],st[1]));card.append(row);
     });
-    card.append(el("p","bvnote",(any?"Mindestens eine Grenze ist überschritten. Apple darf dann nach Beratung mit dem Betriebsrat eine AU ab dem ersten Tag verlangen, zunächst für bis zu sechs Monate. ":"")+"Nächster Stichtag: "+per.stich+". Ab dem vierten Kalendertag ist immer eine AU nötig."));
+    card.append(el("p","bvnote",(any?"Mindestens eine Grenze ist überschritten. Der Arbeitgeber darf dann nach Beratung mit dem Betriebsrat eine AU ab dem ersten Tag verlangen, zunächst für bis zu sechs Monate. ":"")+"Nächster Stichtag: "+per.stich+". Ab dem vierten Kalendertag ist immer eine AU nötig."));
     box.append(card);
   });
 }
@@ -667,7 +734,11 @@ function renderKeys(){
   add("background:var(--c)",nm("christian"));add("background:var(--j)",nm("julia"));
   add("background:linear-gradient(135deg,var(--c) 50%,var(--j) 50%)","Gemeinsam");
   add("box-shadow:inset 0 0 0 2px var(--muted)","Krank");
+  add("box-shadow:inset 0 0 0 2px var(--muted);background:color-mix(in srgb,var(--muted) 30%,transparent)","Krank mit AU");
   add("box-shadow:inset 0 0 0 2px var(--muted);border-radius:50%","Kind krank");
+  const addEl=(cls,txt,t)=>{const x=el("span");x.append(el("span",cls,txt),t);k.append(x);};
+  addEl("x","×","Abgelehnter Urlaub oder RTO");
+  addEl("tri",null,"Brückentag");
   add("width:6px;height:6px;border-radius:50%;background:var(--hol)","Feiertag");
   if(state.kollegen.length){add("height:3px;border-radius:2px;background:var(--muted)","Kollegen");add("box-shadow:inset 0 0 0 2px var(--bad)","Überschneidung");}
 }
@@ -676,7 +747,7 @@ function renderMonths(y){
   state.trips.forEach(t=>{
     const ty=typeOf(t);
     if(ty==="urlaub"||ty==="bildung"){eachDay(t.start,t.end,d=>{if(d.getFullYear()!==y)return;const k=iso(d);const m=map[k]||(map[k]={who:{},ok:false,sick:null});t.who.forEach(p=>{m.who[p]=true;});if(ty==="bildung")m.bu=true;if(t.status==="genehmigt")m.ok=true;});}
-    else{t.who.forEach(p=>{eachDay(t.start,t.end,d=>{if(d.getFullYear()!==y)return;const k=iso(d);const m=map[k]||(map[k]={who:{},ok:false,sick:null});if(!m.sick)m.sick={p:p,ty:ty};});});}
+    else{t.who.forEach(p=>{eachDay(t.start,t.end,d=>{if(d.getFullYear()!==y)return;const k=iso(d);const m=map[k]||(map[k]={who:{},ok:false,sick:null});if(!m.sick)m.sick={p:p,ty:ty,au:!!t.au,rto:!!t.rto};});});}
   });
   const kmap={};
   state.kollegen.forEach(kk=>{eachDay(kk.start,kk.end,d=>{if(d.getFullYear()!==y)return;const k=iso(d);(kmap[k]||(kmap[k]=[])).push(kk.name);});});
@@ -696,8 +767,9 @@ function renderMonths(y){
       let label=d+". "+MONTHS[mo];
       if(H[k]){b.classList.add("hol");label+=", "+H[k];}
       const m=map[k];
-      if(m&&m.sick){b.classList.add(m.sick.ty==="krank"?"sk":"kd");b.style.setProperty("--sc",COLOR[m.sick.p]);label+=", "+nm(m.sick.p)+" "+TYPES[m.sick.ty].toLowerCase();}
+      if(m&&m.sick){b.classList.add(m.sick.ty==="krank"?"sk":"kd");b.style.setProperty("--sc",COLOR[m.sick.p]);label+=", "+nm(m.sick.p)+" "+TYPES[m.sick.ty].toLowerCase()+(m.sick.ty==="krank"?(m.sick.au?" mit AU":" ohne AU"):"");if(m.sick.au)b.classList.add("au");if(m.sick.rto){b.append(el("span","x","×"));label+=", abgelehnter Urlaub oder RTO";}}
       else if(m){const c=m.who.christian,j=m.who.julia;b.classList.add(c&&j?"cj":c?"c":"j");if(!m.ok)b.classList.add("tent");if(m.bu)b.classList.add("bu");label+=", frei: "+[c?nm("christian"):null,j?nm("julia"):null].filter(Boolean).join(" und ");}
+      if(isBridge(ME,dt)){b.append(el("span","tri"));label+=", Brückentag";}
       if(kmap[k]){b.classList.add("kol");label+=", Kollegen: "+kmap[k].join(", ");if(m&&!m.sick&&m.who[ME])b.classList.add("clash");}
       if(k===todayIso)b.classList.add("today");
       b.title=label;b.setAttribute("aria-label",label);
@@ -720,7 +792,7 @@ function renderList(y){
     t.who.forEach(p=>{const c=el("span","chip"+(isPlan(t)?"":" ring"),nm(p));if(isPlan(t))c.style.background=COLOR[p];else c.style.setProperty("--sc",COLOR[p]);ch.append(c);});
     let stTxt,stCls;
     if(isPlan(t)){stCls=t.status||"geplant";stTxt=(ty==="bildung"?"Bildung, ":"")+({geplant:"Geplant",beantragt:"Beantragt",genehmigt:"Genehmigt"}[stCls]||"Geplant");}
-    else{stCls=t.au?"solid":"";stTxt=TYPES[ty]+(t.au?", mit AU":", ohne AU");}
+    else{stCls=t.au?"solid":"";stTxt=TYPES[ty]+(t.au?", mit AU":", ohne AU")+(t.rto?", RTO":"");}
     right.append(ch,el("span","status "+stCls,stTxt));
     if(isPlan(t)&&t.who.indexOf(ME)>=0){const ns=state.kollegen.filter(k=>overlap(t,k)).map(k=>k.name);if(ns.length)right.append(el("span","pill bad","Überschneidung mit "+ns.join(", ")));}
     r.append(right);
@@ -832,15 +904,30 @@ function setType(ty){
 function range(){let s=tripForm.start.value,e=tripForm.end.value;if(!s||!e)return null;if(e<s){const x=s;s=e;e=x;}return{s:s,e:e};}
 function buildPick(){
   const box=$("pick");box.textContent="";
-  if(curType()==="urlaub"||curType()==="bildung")return;
-  const r=range();if(!r)return;
+  const r=range(),plan=formPlan();
+  $("pickWrap").hidden=!r||(plan&&r.s===r.e);
+  if(!r)return;
+  $("pickLabel").textContent=plan?"Welche Tage nimmst du frei? Antippen, um einzelne Tage herauszunehmen.":"An welchen Tagen hättest du gearbeitet?";
   const p=formWho()[0];let n=0;
   eachDay(r.s,r.e,d=>{
     if(n++>62)return;
-    const k=iso(d);if(!(k in pickState))pickState[k]=isWork(p,d);
-    const b=el("button","pk"+(pickState[k]?" on":""),WDS[d.getDay()]+" "+d.getDate()+". "+MSHORT[d.getMonth()]);
-    b.type="button";b.dataset.k=k;b.setAttribute("aria-pressed",pickState[k]?"true":"false");box.append(b);
+    const k=iso(d),work=isWork(p,d);
+    if(!(k in pickState))pickState[k]=work;
+    const off=plan&&!work;
+    const b=el("button","pk"+(off?" off":pickState[k]?" on":""),WDS[d.getDay()]+" "+d.getDate()+". "+MSHORT[d.getMonth()]);
+    b.type="button";b.dataset.k=k;if(off){b.disabled=true;b.title=isHol(p,d)?"Feiertag":"kein Arbeitstag";}
+    b.setAttribute("aria-pressed",pickState[k]&&!off?"true":"false");box.append(b);
   });
+}
+function formPlan(){const t=curType();return t==="urlaub"||t==="bildung";}
+function planBlocks(){
+  const r=range();if(!r)return[];
+  const p=formWho()[0];let any=false;
+  eachDay(r.s,r.e,d=>{if(isWork(p,d)&&pickState[iso(d)]===false)any=true;});
+  if(!any)return[{start:r.s,end:r.e}];
+  const out=[];let cur=null;
+  eachDay(r.s,r.e,d=>{const k=iso(d);if(!isWork(p,d))return;if(pickState[k]){if(!cur)cur={start:k,end:k};else cur.end=k;}else if(cur){out.push(cur);cur=null;}});
+  if(cur)out.push(cur);return out;
 }
 function pickedDays(){const r=range();if(!r)return[];const out=[];eachDay(r.s,r.e,d=>{const k=iso(d);if(pickState[k])out.push(k);});return out;}
 function updatePreview(){
@@ -850,9 +937,11 @@ function updatePreview(){
   const ty=curType(),who=formWho();
   const total=Math.round((parse(r.e)-parse(r.s))/864e5)+1;
   if(ty==="urlaub"||ty==="bildung"){
-    const t={type:ty,start:r.s,end:r.e,who:who};
+    const bl=planBlocks(),t={type:ty,start:r.s,end:r.e,who:who};
+    const td=p=>bl.reduce((a,b)=>a+tripDays({type:ty,start:b.start,end:b.end,who:who},p,null),0);
     P.append(plural(total,"Kalendertag","Kalendertage")+(ty==="bildung"?". Abzug vom Bildungsurlaub: ":". Abzug vom Urlaubskonto: "));
-    who.forEach((p,i)=>{if(i)P.append(", ");P.append(nm(p)+" ");P.append(el("b",null,plural(tripDays(t,p,null),"Tag","Tage")));});
+    who.forEach((p,i)=>{if(i)P.append(", ");P.append(nm(p)+" ");P.append(el("b",null,plural(td(p),"Tag","Tage")));});
+    if(bl.length>1)P.append(el("span","hint","Wird in "+bl.length+" Einträge aufgeteilt: "+bl.map(b=>fmtRange(b.start,b.end)).join(", ")));
     if(ty==="bildung"){const p=who[0],y=parse(r.s).getFullYear(),ba=bildungAnspruch(p,y),used=bildungUsed(p,y)-(editing&&typeOf(editing)==="bildung"?tripDays(editing,p,y):0);P.append(el("span","hint","Danach "+(ba-used-tripDays(t,p,y))+" von "+ba+" Bildungsurlaubstagen "+y+" übrig."));}
     if(who.indexOf(ME)>=0){const ns=state.kollegen.filter(k=>overlap(t,k)).map(k=>k.name+" ("+fmtRange(k.start,k.end)+")");if(ns.length){const h=el("span","hint","Überschneidung mit "+ns.join(", "));h.style.color="var(--bad)";P.append(h);}}
     return;
@@ -875,10 +964,10 @@ function updatePreview(){
 function openTrip(t,presetDate){
   buildWho();editing=t||null;pickState={};
   const ty=t?typeOf(t):"urlaub";
-  $("delTrip").style.visibility=t?"visible":"hidden";
+  $("delTrip").style.display=t?"":"none";
   tripForm.title.value=t?t.title||"":"";
   const d0=presetDate||todayIso;
-  tripForm.start.value=t?t.start:d0;tripForm.end.value=t?t.end:d0;
+  tripForm.start.value=t?t.start:d0;tripForm.end.value=t?t.end:d0;endTouched=!!t&&t.end!==t.start;
   tripForm.who.value=t?(t.who.length===2?"beide":t.who[0]):"beide";
   tripForm.status.value=t?(t.status||"geplant"):"geplant";
   tripForm.note.value=t?t.note||"":"";
@@ -892,21 +981,34 @@ tripForm.addEventListener("change",e=>{
   if(e.target.name==="who"){pickState={};buildPick();}
   updatePreview();
 });
+let endTouched=false;
+function syncEnd(t){
+  if(t.name==="end"){if(tripForm.end.value)endTouched=true;return;}
+  if(t.name!=="start"||!tripForm.start.value)return;
+  if(!endTouched||!tripForm.end.value||tripForm.end.value<tripForm.start.value)tripForm.end.value=tripForm.start.value;
+}
+tripForm.addEventListener("change",e=>{if(e.target.name==="start"||e.target.name==="end"){syncEnd(e.target);buildPick();updatePreview();}});
 tripForm.addEventListener("input",e=>{
-  if(e.target.name==="start"&&tripForm.end.value&&tripForm.end.value<tripForm.start.value)tripForm.end.value=tripForm.start.value;
+  syncEnd(e.target);
   if(e.target.name==="start"||e.target.name==="end")buildPick();
   updatePreview();
 });
-$("pick").addEventListener("click",e=>{const b=e.target.closest(".pk");if(!b)return;pickState[b.dataset.k]=!pickState[b.dataset.k];buildPick();updatePreview();});
+$("pick").addEventListener("click",e=>{const b=e.target.closest(".pk");if(!b||b.disabled)return;pickState[b.dataset.k]=!pickState[b.dataset.k];buildPick();updatePreview();});
 tripForm.addEventListener("submit",e=>{
   e.preventDefault();
   const r=range();if(!r){toast("Bitte Start und Ende wählen.");return;}
   const ty=curType();
   const t={id:editing?editing.id:newId(),type:ty,title:tripForm.title.value.trim(),start:r.s,end:r.e,who:formWho(),status:(ty==="urlaub"||ty==="bildung")?(tripForm.status.value||"geplant"):"",note:tripForm.note.value.trim()};
   if(ty==="krank"||ty==="kindkrank"){t.days=pickedDays();t.au=tripForm.au.checked;t.rto=ty==="krank"&&tripForm.rto.checked;}
+  let parts=[t];
+  if(ty==="urlaub"||ty==="bildung"){
+    const bl=planBlocks();
+    if(!bl.length){toast("Bitte mindestens einen Tag auswählen.");return;}
+    parts=bl.map((b,i)=>Object.assign({},t,{id:i===0?t.id:newId(),start:b.start,end:b.end}));
+  }
   tripDlg.close();
-  if(!inYear(t,state.year)){state.year=parse(r.s).getFullYear();state.bvIdx=null;}
-  writeTrip(t);
+  if(!inYear(parts[0],state.year)){state.year=parse(parts[0].start).getFullYear();state.bvIdx=null;}
+  parts.forEach(x=>writeTrip(x));
   toast(editing?"Gespeichert.":TYPES[ty]+" eingetragen.");
 });
 $("cancelTrip").addEventListener("click",()=>tripDlg.close());
@@ -935,7 +1037,7 @@ function openSettings(){
     WD.forEach(([lab,n])=>{const l=el("label");const i=document.createElement("input");i.type="checkbox";i.name=p+"_wd";i.value=n;i.checked=P.workdays.indexOf(n)>=0;l.append(i,el("span",null,lab));ds.append(l);});
     wl.append(ds);fs.append(wl);
     fs.append(el("div","subhead","Krankheit und Kind krank"));
-    const cb=el("label","check");const ci=document.createElement("input");ci.type="checkbox";ci.name=p+"_bv";ci.checked=!!P.bv;cb.append(ci);const cs=el("span",null,"Krankheitsregeln der BV anwenden");cs.append(el("small",null,"Betriebsvereinbarung Arbeitsunfähigkeit Apple Alstertal"));cb.append(cs);fs.append(cb);
+    const cb=el("label","check");const ci=document.createElement("input");ci.type="checkbox";ci.name=p+"_bv";ci.checked=!!P.bv;cb.append(ci);const cs=el("span",null,"Krankheitsregeln einer BV anwenden");cb.append(cs);fs.append(cb);
     two(mk("Wochenstunden","stunden",P.stunden,"number"),mk("Vollzeit Stunden","vollzeit",P.vollzeit,"number"));
     two(mk("Anzahl Kinder","kinder",P.kinder,"number"),mk("Kinderkrankengeld Tage "+y,"kind",kindAnspruch(p,y),"number"));
     fs.append(mk("Kind krank Tage, voll bezahlt vom Arbeitgeber","kindPaid",kindPaid(p),"number"));
@@ -1105,17 +1207,33 @@ function renderKol(y){
     const ul=el("ul");cl.forEach(c=>ul.append(el("li",null,(c.t.title||"Urlaub")+" und "+c.k.name+": "+fmtRange(c.o.start,c.o.end))));b.append(ul);
   }else b.textContent=state.kollegen.length?"Keine Überschneidungen zwischen "+nm(ME)+" und den Kollegen in "+y+".":"Noch keine Kollegen eingetragen. Importiere einen Screenshot oder trage Urlaube von Hand ein.";
   ban.append(b);
-  state.kollegen.filter(k=>inYear(k,y)).sort((a,b)=>a.start<b.start?-1:a.start>b.start?1:0).forEach(k=>{
-    const r=el("button","trip"+(k.end<todayIso?" past":""));r.type="button";
-    r.append(el("div","t",k.name));
-    r.append(el("div","d",fmtRange(k.start,k.end)+(k.note?", "+k.note:"")));
-    const right=el("div","r");
-    if(myTrips().some(t=>overlap(t,k)))right.append(el("span","pill bad","Überschneidung"));
-    r.append(right);
-    r.addEventListener("click",()=>openKol(k));
-    list.append(r);
+  const groups={};
+  state.kollegen.filter(k=>inYear(k,y)).forEach(k=>{const key=k.name.trim().toLowerCase();(groups[key]||(groups[key]={name:k.name.trim(),items:[]})).items.push(k);});
+  const wd=k=>{let n=0;eachDay(k.start,k.end,d=>{if(d.getFullYear()===y&&d.getDay()>0&&d.getDay()<6&&!isHol(ME,d))n++;});return n;};
+  Object.keys(groups).sort((a,b)=>a.localeCompare(b,"de")).forEach(key=>{
+    const g=groups[key];g.items.sort((a,b)=>a.start<b.start?-1:a.start>b.start?1:0);
+    const clash=g.items.filter(k=>myTrips().some(t=>overlap(t,k)));
+    const det=el("details","kgrp");if(kolOpen.has(key))det.open=true;
+    det.addEventListener("toggle",()=>{if(det.open)kolOpen.add(key);else kolOpen.delete(key);});
+    const sum=el("summary");
+    const total=g.items.reduce((a,k)=>a+wd(k),0);
+    const next=g.items.find(k=>k.end>=todayIso);
+    sum.append(el("div","t",g.name));
+    sum.append(el("div","d",plural(g.items.length,"Zeitraum","Zeiträume")+", "+plural(total,"Tag","Tage")+(next?", nächster: "+fmtRange(next.start,next.end):"")));
+    if(clash.length)sum.append(el("span","pill bad",plural(clash.length,"Überschneidung","Überschneidungen")));
+    sum.append(el("span","chev","›"));
+    det.append(sum);
+    g.items.forEach(k=>{
+      const hit=clash.indexOf(k)>=0;
+      const r=el("button","krow"+(k.end<todayIso?" past":"")+(hit?" bad":""));r.type="button";
+      r.append(el("span",null,fmtRange(k.start,k.end)+(k.note?", "+k.note:"")),el("small",null,(hit?"Überschneidung, ":"")+plural(wd(k),"Tag","Tage")));
+      r.addEventListener("click",()=>openKol(k));
+      det.append(r);
+    });
+    list.append(det);
   });
 }
+const kolOpen=new Set();
 function writeKol(k){return save("kollegen",k.id,{name:k.name,start:k.start,end:k.end,note:k.note||"",updated:Date.now()});}
 function removeKol(id){return save("kollegen",id,null);}
 const kolDlg=$("kolDlg"),kolForm=$("kolForm");let kolEditing=null;
@@ -1130,11 +1248,14 @@ function kolPreview(){
 function openKol(k){
   kolEditing=k||null;
   $("kolTitle").textContent=k?"Kollegenurlaub bearbeiten":"Kollegenurlaub hinzufügen";
-  $("kolDel").style.visibility=k?"visible":"hidden";
+  $("kolDel").style.display=k?"":"none";
   kolForm.name.value=k?k.name:"";kolForm.start.value=k?k.start:todayIso;kolForm.end.value=k?k.end:todayIso;kolForm.note.value=k?k.note||"":"";
-  kolPreview();kolDlg.showModal();
+  kolEndTouched=!!k&&k.end!==k.start;kolPreview();kolDlg.showModal();
 }
-kolForm.addEventListener("input",e=>{if(e.target.name==="start"&&kolForm.end.value<kolForm.start.value)kolForm.end.value=kolForm.start.value;kolPreview();});
+let kolEndTouched=false;
+function kolSync(t){if(t.name==="end"){kolEndTouched=true;return;}if(t.name==="start"&&kolForm.start.value&&(!kolEndTouched||!kolForm.end.value||kolForm.end.value<kolForm.start.value))kolForm.end.value=kolForm.start.value;}
+kolForm.addEventListener("input",e=>{kolSync(e.target);kolPreview();});
+kolForm.addEventListener("change",e=>{kolSync(e.target);kolPreview();});
 kolForm.addEventListener("submit",e=>{
   e.preventDefault();const r=kolRange(),name=kolForm.name.value.trim();
   if(!r||!name){toast("Bitte Name und Zeitraum angeben.");return;}
@@ -1313,6 +1434,15 @@ $("bakFile").addEventListener("change",e=>{
   rd.readAsText(f);
 });
 $("bakClose").addEventListener("click",()=>bakDlg.close());
+
+/* Datumsfelder: eigene Anzeige, natives Auswahlrad darüber */
+function enhanceDates(){document.querySelectorAll(".row label.f input[type=date]").forEach(inp=>{if(inp.parentNode.classList.contains("datebox"))return;const box=el("span","datebox");inp.parentNode.insertBefore(box,inp);box.append(el("span","dv"),inp);});}
+function paintDates(){document.querySelectorAll(".datebox").forEach(b=>{const v=b.querySelector("input").value,dv=b.querySelector(".dv");if(!v){dv.textContent="Datum wählen";return;}const d=parse(v);dv.textContent=WDS[d.getDay()]+", "+dm(d)+d.getFullYear();});}
+enhanceDates();
+document.addEventListener("input",e=>{if(e.target.type==="date")paintDates();});
+document.addEventListener("change",e=>{if(e.target.type==="date")paintDates();});
+const dlgObs=new MutationObserver(()=>paintDates());
+document.querySelectorAll("dialog").forEach(d=>dlgObs.observe(d,{attributes:true,attributeFilter:["open"]}));
 
 /* Navigation */
 $("prevY").addEventListener("click",()=>{state.year--;state.bvIdx=null;render();});
