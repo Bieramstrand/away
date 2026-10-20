@@ -294,6 +294,9 @@ dialog{overscroll-behavior:contain;touch-action:manipulation}
 .krow.storno .lleft>span:last-child{text-decoration:line-through;opacity:.7}
 #stoDlg .actions .r .save{grid-column:1 / -1}
 @media (max-width:560px){.dlg .actions .l{margin-bottom:8px}.dlg .actions .l .ghost{border-radius:12px;min-height:44px;font-size:.9rem}}
+.h2year{color:var(--muted);font-weight:400}
+.daybody{display:flex;flex-direction:column;gap:10px}
+.daybody .krow{border-top:1px solid var(--line);padding-left:4px}
 .lleft{display:flex;align-items:center;gap:8px;min-width:0}
 .lleft>span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pdots{display:inline-flex;gap:3px;flex:none}
@@ -387,7 +390,7 @@ a.ghost{text-decoration:none;color:inherit;display:inline-flex;align-items:cente
 
   <section class="sec">
     <div class="sechead">
-      <h2>Jahresübersicht</h2>
+      <h2>Jahresübersicht <span class="h2year" id="ovYear"></span></h2>
     </div>
     <div class="ferbar" id="ferbar"></div>
     <details class="legbox" id="legend"><summary>Legende</summary><div class="keys" id="keys"></div></details>
@@ -399,7 +402,7 @@ a.ghost{text-decoration:none;color:inherit;display:inline-flex;align-items:cente
     <div class="list" id="list"></div>
   </section>
   <p class="foot" id="sync"><span class="dot"></span>Verbindung wird aufgebaut</p>
-  <p class="foot ver">Away Version 3.0</p>
+  <p class="foot ver">Away Version 3.2</p>
 </div>
 
 <div class="dock"><button class="primary" id="addBtn">Eintragen</button></div>
@@ -540,6 +543,17 @@ a.ghost{text-decoration:none;color:inherit;display:inline-flex;align-items:cente
       <button type="button" class="ghost" id="stoShare" hidden>Teilen</button>
       <button type="button" class="ghost" id="stoMark">Als storniert markieren</button>
       <button type="button" class="ghost" id="stoClose">Schließen</button>
+    </div></div>
+  </div>
+</dialog>
+
+<dialog id="dayDlg">
+  <div class="dlg">
+    <h2 id="dayTitle">Tag</h2>
+    <div class="daybody" id="dayBody"></div>
+    <div class="actions"><div class="r">
+      <button type="button" class="ghost" id="dayClose">Schließen</button>
+      <button type="button" class="save" id="dayAdd">Eintragen</button>
     </div></div>
   </div>
 </dialog>
@@ -733,7 +747,7 @@ function plural(n,one,many){return n+" "+(n===1||n===-1?one:many);}
 function render(){
   recompute();
   const y=state.year;
-  $("yearLabel").textContent=y;
+  $("yearLabel").textContent=y;$("ovYear").textContent=y;
   renderLede();renderPeople(y);renderBV(y);renderKol(y);renderFerbar(y);renderKeys();renderMonths(y);renderList(y);renderSync();
 }
 function renderLede(){
@@ -1634,11 +1648,40 @@ $("prevY").addEventListener("click",()=>{state.year--;state.bvIdx=null;render();
 $("nextY").addEventListener("click",()=>{state.year++;state.bvIdx=null;render();});
 $("addBtn").addEventListener("click",()=>openTrip(null));
 $("openSettings").addEventListener("click",openSettings);
+const dayDlg=$("dayDlg");
+function dayInfo(k){
+  const d=parse(k),info=[];
+  const hol={};PEOPLE.forEach(p=>{const n=holidays(d.getFullYear(),state.people[p].bundesland)[k];if(n)hol[n]=1;});
+  Object.keys(hol).forEach(n=>info.push(["hol","Feiertag: "+n]));
+  if(isBridge(ME,d))info.push(["br","Brückentag"]);
+  ferienAt(k).forEach(f=>info.push([f.l==="HH"?"sfh":"sfs",f.n+" "+SCHOOL_NAME[f.l]]));
+  const kol=state.kollegen.filter(x=>x.start<=k&&x.end>=k).map(x=>x.name);
+  if(kol.length)info.push(["kol","Kollegen im Urlaub: "+Array.from(new Set(kol)).join(", ")]);
+  return info;
+}
+function openDay(k){
+  const d=parse(k);
+  $("dayTitle").textContent=WDS[d.getDay()]+", "+d.getDate()+". "+MONTHS[d.getMonth()]+" "+d.getFullYear();
+  const box=$("dayBody");box.textContent="";
+  dayInfo(k).forEach(([cls,txt])=>{const it=el("div","kitem");it.append(el("span","mini "+cls),el("span","lab",txt));box.append(it);});
+  state.trips.filter(t=>t.start<=k&&t.end>=k).forEach(t=>{
+    const r=el("button","krow lrow"+(t.status==="storniert"?" storno":""));r.type="button";
+    const left=el("span","lleft");const dots=el("span","pdots");
+    t.who.forEach(p=>{const x=el("i","pdot"+(isPlan(t)?"":" ring"));x.style.setProperty("--pc",COLOR[p]);dots.append(x);});
+    left.append(dots,el("span",null,(t.title||TYPES[typeOf(t)])+", "+fmtRange(t.start,t.end)));
+    r.append(left,el("small",null,"öffnen ›"));
+    r.addEventListener("click",()=>{dayDlg.close();openTrip(t);});box.append(r);
+  });
+  $("dayAdd").onclick=()=>{dayDlg.close();openTrip(null,k);};
+  dayDlg.showModal();
+}
+$("dayClose").addEventListener("click",()=>dayDlg.close());
 $("months").addEventListener("click",e=>{
   const b=e.target.closest(".day");if(!b)return;
   const k=b.dataset.d;
-  const hit=state.trips.filter(t=>t.start<=k&&t.end>=k).sort((a,b)=>(typeOf(a)==="urlaub")-(typeOf(b)==="urlaub"))[0];
-  if(hit)openTrip(hit);else openTrip(null,k);
+  const hits=state.trips.filter(t=>t.start<=k&&t.end>=k);
+  if(dayInfo(k).length||hits.length>1){openDay(k);return;}
+  if(hits.length)openTrip(hits[0]);else openTrip(null,k);
 });
 
 render();
