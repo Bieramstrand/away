@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -233,6 +233,8 @@ legend{padding:0 6px;font-weight:600}
 .ghost,.save,.danger{white-space:nowrap;font-size:.95rem}
 dialog{overflow-x:hidden}
 [hidden]{display:none!important}
+html,body,button,a,label,summary,.day{touch-action:manipulation}
+input,select,textarea{font-size:max(16px,1em)}
 html,body{overflow-x:hidden;max-width:100%}
 fieldset{min-width:0;max-width:100%}
 .row{align-items:end}
@@ -246,9 +248,9 @@ fieldset{min-width:0;max-width:100%}
 .f .datebox input[type=date]{position:absolute;inset:0;width:100%;height:100%;min-height:0;opacity:0;margin:0;padding:0;border:0;-webkit-appearance:none;appearance:none}
 label.f{min-width:0}
 .row label.f{overflow:hidden;padding:1px}
-.f input[type=date]{width:100%;min-width:0;max-width:100%;-webkit-appearance:none;appearance:none;font-size:.95rem;padding:10px}
+.f input[type=date]{width:100%;min-width:0;max-width:100%;-webkit-appearance:none;appearance:none;font-size:16px;padding:10px}
 .ver{display:block;margin-top:4px;opacity:.7}
-dialog{overscroll-behavior:contain;touch-action:pan-y}
+dialog{overscroll-behavior:contain;touch-action:manipulation}
 .dlg,.dlg>*{min-width:0;max-width:100%}
 .dlg input,.dlg select,.dlg textarea{max-width:100%}
 .days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
@@ -311,7 +313,7 @@ dialog{overscroll-behavior:contain;touch-action:pan-y}
 .revrow{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--bg)}
 .revrow input[type=checkbox]{width:20px;height:20px;accent-color:var(--ink);margin:0}
 .revrow .flds{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:6px}
-.revrow input[type=text],.revrow input[type=date]{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 8px;font-size:.9rem;width:100%;min-width:0;color:var(--ink)}
+.revrow input[type=text],.revrow input[type=date]{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 8px;font-size:16px;width:100%;min-width:0;color:var(--ink)}
 .revrow small{grid-column:2;color:var(--muted);font-size:.78rem}
 .revrow small.bad{color:var(--bad)}
 .drop{border:1.5px dashed var(--line);border-radius:14px;padding:18px;text-align:center;color:var(--muted);display:block;cursor:pointer}
@@ -397,7 +399,7 @@ a.ghost{text-decoration:none;color:inherit;display:inline-flex;align-items:cente
     <div class="list" id="list"></div>
   </section>
   <p class="foot" id="sync"><span class="dot"></span>Verbindung wird aufgebaut</p>
-  <p class="foot ver">Away Version 2.9</p>
+  <p class="foot ver">Away Version 3.0</p>
 </div>
 
 <div class="dock"><button class="primary" id="addBtn">Eintragen</button></div>
