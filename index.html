@@ -28,7 +28,7 @@ applyTheme(t);})();
 <style>
 :root{
   --bg:#F6F3EC; --surface:#FFFDF8; --ink:#23272B; --muted:#716B61; --line:#E3DCCD;
-  --c:#2E6A68; --j:#C2536A; --hol:#B8862B; --we:#EFEAE0; --fer:#5E86B8;
+  --c:#2E6A68; --j:#C2536A; --hol:#B8862B; --we:#EFEAE0; --fer:#5E86B8; --kita:#8E6BB0;
   --ok:#3C7A4E; --warn:#B07A1E; --bad:#B3402F;
   color-scheme:light;
   box-sizing:border-box;
@@ -38,14 +38,14 @@ applyTheme(t);})();
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
     --bg:#1C1B19; --surface:#262522; --ink:#EEE8DC; --muted:#A49E91; --line:#3B3934;
-    --c:#72B5AF; --j:#E68C9E; --hol:#D9AE5C; --we:#2B2A27; --fer:#8FB2DE;
+    --c:#72B5AF; --j:#E68C9E; --hol:#D9AE5C; --we:#2B2A27; --fer:#8FB2DE; --kita:#B89BD6;
     --ok:#7CC08D; --warn:#E0B055; --bad:#EE8A79;
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
   --bg:#1C1B19; --surface:#262522; --ink:#EEE8DC; --muted:#A49E91; --line:#3B3934;
-  --c:#72B5AF; --j:#E68C9E; --hol:#D9AE5C; --we:#2B2A27; --fer:#8FB2DE;
+  --c:#72B5AF; --j:#E68C9E; --hol:#D9AE5C; --we:#2B2A27; --fer:#8FB2DE; --kita:#B89BD6;
   --ok:#7CC08D; --warn:#E0B055; --bad:#EE8A79;
   color-scheme:dark;
 }
@@ -297,6 +297,9 @@ dialog{overscroll-behavior:contain;touch-action:manipulation}
 .h2year{color:var(--muted);font-weight:400}
 .daybody{display:flex;flex-direction:column;gap:10px}
 .daybody .krow{border-top:1px solid var(--line);padding-left:4px}
+.day .ktm{position:absolute;right:3px;bottom:3px;width:5px;height:5px;background:var(--kita);transform:rotate(45deg);pointer-events:none}
+.mini.kt::after{content:"";position:absolute;right:3px;bottom:3px;width:6px;height:6px;background:var(--kita);transform:rotate(45deg)}
+.ferbar .ferlink{border:0;background:none;color:var(--muted);text-decoration:underline;text-underline-offset:3px;padding:4px 6px}
 .lleft{display:flex;align-items:center;gap:8px;min-width:0}
 .lleft>span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pdots{display:inline-flex;gap:3px;flex:none}
@@ -402,7 +405,7 @@ a.ghost{text-decoration:none;color:inherit;display:inline-flex;align-items:cente
     <div class="list" id="list"></div>
   </section>
   <p class="foot" id="sync"><span class="dot"></span>Verbindung wird aufgebaut</p>
-  <p class="foot ver">Away Version 3.2</p>
+  <p class="foot ver">Away Version 3.5</p>
 </div>
 
 <div class="dock"><button class="primary" id="addBtn">Eintragen</button></div>
@@ -558,6 +561,33 @@ a.ghost{text-decoration:none;color:inherit;display:inline-flex;align-items:cente
   </div>
 </dialog>
 
+<dialog id="schDlg">
+  <div class="dlg">
+    <h2>Kita und Schule Schließtage</h2>
+    <div class="preview">Gilt für euch beide und wird synchronisiert. Im Kalender als kleine lila Raute unten rechts.</div>
+    <div class="list" id="schList"></div>
+    <div class="bakbtns"><label class="ghost bakfile">PDF oder Screenshot importieren<input type="file" id="schFile" accept="application/pdf,.pdf,image/*" multiple></label></div>
+    <div class="preview" id="schImpStatus" hidden></div>
+    <div class="rev" id="schRev"></div>
+    <button type="button" class="save" id="schImpSave" hidden>Übernehmen</button>
+    <div class="seglabel" id="schFormTitle">Neuer Schließtag</div>
+    <div class="seg" id="schSeg">
+      <label><input type="radio" name="schWhat" value="Kita" checked><span>Kita</span></label>
+      <label><input type="radio" name="schWhat" value="Schule"><span>Schule</span></label>
+      <label><input type="radio" name="schWhat" value="Hort"><span>Hort</span></label>
+    </div>
+    <div class="row">
+      <label class="f">Von<input type="date" id="schStart"></label>
+      <label class="f">Bis<input type="date" id="schEnd"></label>
+    </div>
+    <label class="f">Notiz<input id="schNote" maxlength="120" autocomplete="off" placeholder="z.B. Teamtag, Brückentag"></label>
+    <div class="actions"><div class="l"><button type="button" class="danger" id="schDel" style="display:none">Löschen</button></div><div class="r">
+      <button type="button" class="ghost" id="schClose">Schließen</button>
+      <button type="button" class="save" id="schSave">Hinzufügen</button>
+    </div></div>
+  </div>
+</dialog>
+
 <dialog id="expDlg">
   <div class="dlg">
     <h2>Export</h2>
@@ -632,7 +662,7 @@ const typeOf=t=>["krank","kindkrank","bildung"].indexOf(t.type)>=0?t.type:"urlau
 const isPlan=t=>{const x=typeOf(t);return x==="urlaub"||x==="bildung";};
 
 let db=null;
-const state={year:new Date().getFullYear(),people:clone(DEFAULTS),trips:[],kollegen:[],mode:"loading",bvIdx:null};
+const state={year:new Date().getFullYear(),people:clone(DEFAULTS),trips:[],kollegen:[],schliess:[],mode:"loading",bvIdx:null};
 const ME="christian";
 let auSet={christian:new Set(),julia:new Set()};
 
@@ -835,14 +865,19 @@ function renderFerbar(y){
   const b=$("ferbar");b.textContent="";b.append(el("span",null,"Schulferien"));
   ["HH","SH"].forEach(l=>{const x=el("button",null,SCHOOL_NAME[l]);x.type="button";x.setAttribute("aria-pressed",ferienOn.indexOf(l)>=0?"true":"false");
     x.addEventListener("click",()=>{ferienOn=ferienOn.indexOf(l)>=0?ferienOn.filter(v=>v!==l):ferienOn.concat(l);try{localStorage.setItem("away:ferien",ferienOn.join(","));}catch(e){}render();});b.append(x);});
+  {const x=el("button",null,"Kita & Schule");x.type="button";x.setAttribute("aria-pressed",schliessOn?"true":"false");
+   x.addEventListener("click",()=>{schliessOn=!schliessOn;try{localStorage.setItem("away:schliess",schliessOn?"1":"0");}catch(e){}render();});b.append(x);
+   const m=el("button","ferlink","Schließtage ›");m.type="button";m.addEventListener("click",openSchliess);b.append(m);}
   if(ferienOn.length&&y>2029)b.append(el("small",null,"Schulferien sind bis Sommer 2029 hinterlegt."));
 }
+let schliessOn=(()=>{try{return localStorage.getItem("away:schliess")!=="0";}catch(e){return true;}})();
+function schliessAt(k){return schliessOn?state.schliess.filter(x=>x.start<=k&&x.end>=k):[];}
 function renderKeys(){
   const k=$("keys");k.textContent="";
   const groups=[
     ["Urlaub",[["c",nm("christian")],["j",nm("julia")],["cj","Gemeinsam"],["tent","Nicht genehmigt"],["bu","Bildungsurlaub"]]],
     ["Krankheit",[["sk","Krank"],["au","Krank mit AU"],["kd","Kind krank"],["sk rto","Abgelehnter Tag"]]],
-    ["Kalender",[["hol","Feiertag"],["br","Brückentag"],["sfh"+(ferienOn.indexOf("HH")>=0?"":" off"),"Schulferien HH"],["sfs"+(ferienOn.indexOf("SH")>=0?"":" off"),"Schulferien SH"]].concat(state.kollegen.length?[["kol","Kollegen"],["clash","Überschneidung"]]:[])]
+    ["Kalender",[["hol","Feiertag"],["br","Brückentag"],["sfh"+(ferienOn.indexOf("HH")>=0?"":" off"),"Schulferien HH"],["sfs"+(ferienOn.indexOf("SH")>=0?"":" off"),"Schulferien SH"],["kt"+(schliessOn?"":" off"),"Kita oder Schule zu"]].concat(state.kollegen.length?[["kol","Kollegen"],["clash","Überschneidung"]]:[])]
   ];
   groups.forEach(([title,items])=>{
     const g=el("div","kgroup");g.append(el("h4",null,title));
@@ -880,6 +915,7 @@ function renderMonths(y){
       if(m&&m.sick){b.classList.add(m.sick.ty==="krank"?"sk":"kd");b.style.setProperty("--sc",COLOR[m.sick.p]);label+=", "+nm(m.sick.p)+" "+TYPES[m.sick.ty].toLowerCase()+(m.sick.ty==="krank"?(m.sick.au?" mit AU":" ohne AU"):"");if(m.sick.au)b.classList.add("au");if(m.sick.rto){b.append(el("span","x","×"));label+=", abgelehnter Urlaub oder RTO";}}
       else if(m){const c=m.who.christian,j=m.who.julia;b.classList.add(c&&j?"cj":c?"c":"j");if(!m.ok)b.classList.add("tent");if(m.bu)b.classList.add("bu");label+=", frei: "+[c?nm("christian"):null,j?nm("julia"):null].filter(Boolean).join(" und ");}
       if(isBridge(ME,dt)){b.append(el("span","tri"));label+=", Brückentag";}
+      {const sc=schliessAt(k);if(sc.length){b.append(el("span","ktm"));label+=", geschlossen: "+sc.map(x=>x.name).join(", ");}}
       {const fe=ferienAt(k);if(fe.length){if(fe.some(f=>f.l==="HH"))b.classList.add("sfh");if(fe.some(f=>f.l==="SH"))b.classList.add("sfs");label+=", "+fe.map(f=>f.n+" "+SCHOOL_SHORT[f.l]).join(", ");}}
       if(kmap[k]){b.classList.add("kol");label+=", Kollegen: "+kmap[k].join(", ");if(m&&!m.sick&&m.who[ME])b.classList.add("clash");}
       if(k===todayIso)b.classList.add("today");
@@ -939,14 +975,19 @@ function renderSync(){
 let toastT;function toast(msg){const t=$("toast");t.textContent=msg;t.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("show"),3800);}
 
 /* Speicher */
-function loadLocal(){try{const raw=localStorage.getItem(LSKEY);if(raw){const o=JSON.parse(raw);PEOPLE.forEach(p=>{if(o.people&&o.people[p])state.people[p]=Object.assign(clone(DEFAULTS[p]),o.people[p]);});if(Array.isArray(o.trips))state.trips=o.trips.filter(validTrip);if(Array.isArray(o.kollegen))state.kollegen=o.kollegen.filter(validKol);}}catch(e){}}
-function saveLocal(){try{localStorage.setItem(LSKEY,JSON.stringify({people:state.people,trips:state.trips,kollegen:state.kollegen}));}catch(e){}}
-const COL="household",KEYS={people:"urlaubstage:people",trips:"urlaubstage:trips",kollegen:"urlaubstage:kollegen"};
+function loadLocal(){try{const raw=localStorage.getItem(LSKEY);if(raw){const o=JSON.parse(raw);PEOPLE.forEach(p=>{if(o.people&&o.people[p])state.people[p]=Object.assign(clone(DEFAULTS[p]),o.people[p]);});if(Array.isArray(o.trips))state.trips=o.trips.filter(validTrip);if(Array.isArray(o.kollegen))state.kollegen=o.kollegen.filter(validKol);if(Array.isArray(o.schliess))state.schliess=o.schliess.filter(validKol);}}catch(e){}}
+function saveLocal(){try{localStorage.setItem(LSKEY,JSON.stringify({people:state.people,trips:state.trips,kollegen:state.kollegen,schliess:state.schliess}));}catch(e){}}
+const COL="household",KEYS={people:"urlaubstage:people",trips:"urlaubstage:trips",kollegen:"urlaubstage:kollegen",schliess:"urlaubstage:schliess",meta:"urlaubstage:meta"};
+let lastRev=null,lastFull=0;
+function bumpRev(){if(!db)return Promise.resolve();return ref("meta").set({rev:Date.now()+"_"+Math.random().toString(36).slice(2,7),updated:Date.now()}).catch(e=>console.error(e));}
 let pendingWrites=0,lastSig="";
 function parseValue(v){if(typeof v==="string"){try{return JSON.parse(v);}catch(e){return null;}}return v==null?null:v;}
 function dbFail(e){console.error(e);toast("Speichern fehlgeschlagen. Bitte Verbindung prüfen.");}
 function ref(k){return db.collection(COL).doc(KEYS[k]);}
 async function putEntry(k,id,body){
+  await putEntryRaw(k,id,body);await bumpRev();
+}
+async function putEntryRaw(k,id,body){
   const fp=new firebase.firestore.FieldPath("value",id);
   const val=body===null?firebase.firestore.FieldValue.delete():body;
   try{await ref(k).update(fp,val,"updated",Date.now());}
@@ -966,7 +1007,7 @@ async function save(list,id,body){
   pendingWrites++;
   try{await putEntry(list,id,body);return true;}
   catch(e){dbFail(e);return false;}
-  finally{pendingWrites--;lastSig="";poll();}
+  finally{pendingWrites--;lastSig="";poll(true);}
 }
 async function writeTrip(t){
   const body={type:t.type,title:t.title||"",start:t.start,end:t.end,who:t.who,status:t.status||"",note:t.note||"",updated:Date.now()};
@@ -978,25 +1019,34 @@ async function writePeople(next){
   state.people=next;saveLocal();render();
   if(!db)return;
   pendingWrites++;
-  try{await ref("people").set({value:clone(next),updated:Date.now()});}
+  try{await ref("people").set({value:clone(next),updated:Date.now()});await bumpRev();}
   catch(e){dbFail(e);}
-  finally{pendingWrites--;lastSig="";poll();}
+  finally{pendingWrites--;lastSig="";poll(true);}
 }
 function newId(){return "t"+Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
-async function poll(){
+async function poll(force){
   if(!db||pendingWrites>0)return;
   try{
-    const snaps=await Promise.all(["people","trips","kollegen"].map(k=>ref(k).get({source:"server"})));
+    if(!force&&lastRev!==null&&Date.now()-lastFull<120000){
+      const m=await ref("meta").get({source:"server"});
+      const rev=m.exists?String((m.data()||{}).rev||""):"";
+      if(state.mode!=="sync"){state.mode="sync";renderSync();}
+      if(rev===lastRev){autoBackup();return;}
+    }
+    {const m=await ref("meta").get({source:"server"});lastRev=m.exists?String((m.data()||{}).rev||""):"";}
+    lastFull=Date.now();
+    const snaps=await Promise.all(["people","trips","kollegen","schliess"].map(k=>ref(k).get({source:"server"})));
     if(pendingWrites>0)return;
     const vals=snaps.map(x=>x.exists?parseValue((x.data()||{}).value):null);
     const sig=JSON.stringify(vals);
     const wasOff=state.mode!=="sync";state.mode="sync";
     if(sig===lastSig){if(wasOff)renderSync();autoBackup();return;}
     lastSig=sig;
-    const P=vals[0],T=vals[1],K=vals[2];
+    const P=vals[0],T=vals[1],K=vals[2],S=vals[3];
     if(P&&typeof P==="object")PEOPLE.forEach(p=>{if(P[p]){state.people[p]=Object.assign(clone(DEFAULTS[p]),P[p]);if(!Array.isArray(state.people[p].workdays))state.people[p].workdays=[1,2,3,4,5];}});
     state.trips=T&&typeof T==="object"?Object.keys(T).map(id=>Object.assign({id:id},T[id])).filter(validTrip):[];
     state.kollegen=K&&typeof K==="object"?Object.keys(K).map(id=>Object.assign({id:id},K[id])).filter(validKol):[];
+    state.schliess=S&&typeof S==="object"?Object.keys(S).map(id=>Object.assign({id:id},S[id])).filter(validKol):[];
     saveLocal();render();autoBackup();
   }catch(e){console.error(e);state.mode="offline";renderSync();}
 }
@@ -1005,9 +1055,9 @@ async function initDb(){
   if(!window.firebase||String(FIREBASE_CONFIG.apiKey).indexOf("HIER")===0){state.mode="local";render();return;}
   try{firebase.initializeApp(FIREBASE_CONFIG);db=firebase.firestore();}catch(e){console.error(e);state.mode="local";render();return;}
   render();
-  await poll();
-  setInterval(poll,5000);
-  document.addEventListener("visibilitychange",()=>{if(!document.hidden)poll();});
+  await poll(true);
+  setInterval(()=>poll(false),5000);
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden)poll(true);});
 }
 
 /* Eintrag Dialog */
@@ -1071,6 +1121,7 @@ function updatePreview(){
     if(bl.length>1)P.append(el("span","hint","Wird in "+bl.length+" Einträge aufgeteilt: "+bl.map(b=>fmtRange(b.start,b.end)).join(", ")));
     if(ty==="bildung"){const p=who[0],y=parse(r.s).getFullYear(),ba=bildungAnspruch(p,y),used=bildungUsed(p,y)-(editing&&typeOf(editing)==="bildung"?tripDays(editing,p,y):0);P.append(el("span","hint","Danach "+(ba-used-tripDays(t,p,y))+" von "+ba+" Bildungsurlaubstagen "+y+" übrig."));}
     {const fe=ferienIn(r.s,r.e);if(fe.length)P.append(el("span","hint","In den Schulferien: "+Array.from(new Set(fe)).join(", ")));}
+    {const sc=schliessOn?state.schliess.filter(x=>x.start<=r.e&&x.end>=r.s):[];if(sc.length)P.append(el("span","hint","Geschlossen: "+sc.map(x=>x.name+" "+fmtRange(x.start,x.end)).join(", ")));}
     if(who.indexOf(ME)>=0){const ns=state.kollegen.filter(k=>overlap(t,k)).map(k=>k.name+" ("+fmtRange(k.start,k.end)+")");if(ns.length){const h=el("span","hint","Überschneidung mit "+ns.join(", "));h.style.color="var(--bad)";P.append(h);}}
     return;
   }
@@ -1485,7 +1536,7 @@ $("impClose").addEventListener("click",()=>{if(impCtl)impCtl.abort();impDlg.clos
 /* Datensicherung */
 const BAK="urlaubstage:backup:",BAKLS="urlaubstage:lastBackup",bakDlg=$("bakDlg");
 function toMap(arr){const o={};arr.forEach(x=>{const c=clone(x);delete c.id;o[x.id]=c;});return o;}
-function snapshot(){return{app:"urlaubstage",version:1,created:new Date().toISOString(),people:clone(state.people),trips:toMap(state.trips),kollegen:toMap(state.kollegen)};}
+function snapshot(){return{app:"urlaubstage",version:1,created:new Date().toISOString(),people:clone(state.people),trips:toMap(state.trips),kollegen:toMap(state.kollegen),schliess:toMap(state.schliess)};}
 function validBackup(b){return !!(b&&typeof b==="object"&&b.people&&typeof b.people==="object"&&b.trips&&typeof b.trips==="object"&&b.kollegen&&typeof b.kollegen==="object");}
 function countOf(b){return plural(Object.keys(b.trips).length,"Eintrag","Einträge")+", "+plural(Object.keys(b.kollegen).length,"Kollegenurlaub","Kollegenurlaube");}
 async function autoBackup(){
@@ -1510,14 +1561,16 @@ async function restore(b,label){
         batch.set(ref("people"),{value:clone(b.people),updated:now});
         batch.set(ref("trips"),{value:clone(b.trips),updated:now});
         batch.set(ref("kollegen"),{value:clone(b.kollegen),updated:now});
-        await batch.commit();
+        batch.set(ref("schliess"),{value:clone(b.schliess||{}),updated:now});
+        await batch.commit();await bumpRev();
       }finally{pendingWrites--;}
-      lastSig="";await poll();
+      lastSig="";await poll(true);
     }else{
       try{localStorage.setItem("urlaubstage:vorher",JSON.stringify(cur));}catch(e){}
       PEOPLE.forEach(p=>{if(b.people[p])state.people[p]=Object.assign(clone(DEFAULTS[p]),b.people[p]);});
       state.trips=Object.keys(b.trips).map(id=>Object.assign({id:id},b.trips[id])).filter(validTrip);
       state.kollegen=Object.keys(b.kollegen).map(id=>Object.assign({id:id},b.kollegen[id])).filter(validKol);
+      state.schliess=Object.keys(b.schliess||{}).map(id=>Object.assign({id:id},b.schliess[id])).filter(validKol);
       saveLocal();render();
     }
     bakDlg.close();toast("Wiederhergestellt.");
@@ -1566,6 +1619,99 @@ $("bakFile").addEventListener("change",e=>{
   rd.readAsText(f);
 });
 $("bakClose").addEventListener("click",()=>bakDlg.close());
+
+/* Schließtage */
+const schDlg=$("schDlg");let schEdit=null;
+function renderSchList(){
+  const box=$("schList");box.textContent="";
+  const items=state.schliess.slice().sort((a,b)=>a.start<b.start?-1:1).filter(x=>x.end>=(state.year-1)+"-12-01");
+  if(!items.length){box.append(el("div","empty","Noch keine Schließtage eingetragen."));return;}
+  items.forEach(x=>{const r=el("button","krow"+(x.end<todayIso?" past":""));r.type="button";
+    const left=el("span","lleft");left.append(el("span","mini kt"),el("span",null,x.name+", "+fmtRange(x.start,x.end)));
+    r.append(left,el("small",null,x.note||"bearbeiten ›"));
+    r.addEventListener("click",()=>schFill(x));box.append(r);});
+}
+function schFill(x){
+  schEdit=x||null;
+  $("schFormTitle").textContent=x?"Schließtag bearbeiten":"Neuer Schließtag";
+  const what=x?x.name:"Kita";const r=schDlg.querySelector('input[name="schWhat"][value="'+what+'"]');if(r)r.checked=true;
+  $("schStart").value=x?x.start:todayIso;$("schEnd").value=x?x.end:todayIso;$("schNote").value=x?x.note||"":"";
+  $("schDel").style.display=x?"":"none";$("schSave").textContent=x?"Speichern":"Hinzufügen";
+  paintDates();
+}
+function openSchliess(){renderSchList();schFill(null);schRows=[];renderSchRev();$("schImpStatus").hidden=true;schDlg.showModal();}
+["schStart","schEnd"].forEach(id=>{const f=$(id);const h=()=>{if(id==="schStart"&&$("schStart").value&&(!$("schEnd").value||$("schEnd").value<$("schStart").value||!schEdit))$("schEnd").value=$("schStart").value;paintDates();};f.addEventListener("input",h);f.addEventListener("change",h);});
+$("schSave").addEventListener("click",async()=>{
+  let s=$("schStart").value,e=$("schEnd").value;if(!s||!e){toast("Bitte Datum wählen.");return;}if(e<s){const t=s;s=e;e=t;}
+  const c=schDlg.querySelector('input[name="schWhat"]:checked');
+  await save("schliess",schEdit?schEdit.id:newId(),{name:c?c.value:"Kita",start:s,end:e,note:$("schNote").value.trim(),updated:Date.now()});
+  toast(schEdit?"Gespeichert.":"Schließtag eingetragen.");renderSchList();schFill(null);
+});
+$("schDel").addEventListener("click",async()=>{if(!schEdit)return;if(!confirm("Schließtag löschen?"))return;await save("schliess",schEdit.id,null);renderSchList();schFill(null);toast("Gelöscht.");});
+$("schClose").addEventListener("click",()=>schDlg.close());
+
+/* Schließtage Import */
+let pdfjsP=null,schRows=[];
+function loadPdfJs(){
+  if(window.pdfjsLib)return Promise.resolve(window.pdfjsLib);if(pdfjsP)return pdfjsP;
+  pdfjsP=new Promise((res,rej)=>{const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+    sc.onload=()=>{window.pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";res(window.pdfjsLib);};
+    sc.onerror=()=>{pdfjsP=null;rej(new Error("PDF Leser konnte nicht geladen werden"));};document.head.append(sc);});
+  return pdfjsP;
+}
+async function readPdf(file){
+  const lib=await loadPdfJs();const doc=await lib.getDocument({data:await file.arrayBuffer()}).promise;
+  let text="";for(let i=1;i<=Math.min(doc.numPages,6);i++){const pg=await doc.getPage(i);const tc=await pg.getTextContent();text+=tc.items.map(x=>x.str).join(" ")+"\n";}
+  if(text.replace(/\s/g,"").length>60)return{text:text.slice(0,20000),images:[]};
+  const imgs=[];for(let i=1;i<=Math.min(doc.numPages,3);i++){const pg=await doc.getPage(i);const vp=pg.getViewport({scale:1});const sc=Math.min(2,1600/Math.max(vp.width,vp.height));const v=pg.getViewport({scale:sc});
+    const c=document.createElement("canvas");c.width=Math.round(v.width);c.height=Math.round(v.height);await pg.render({canvasContext:c.getContext("2d"),viewport:v}).promise;imgs.push(c.toDataURL("image/jpeg",0.85));}
+  return{text:"",images:imgs};
+}
+function renderSchRev(){
+  const box=$("schRev");box.textContent="";
+  schRows.forEach(r=>{
+    const row=el("div","revrow");const cb=document.createElement("input");cb.type="checkbox";cb.checked=r.on;cb.setAttribute("aria-label","Übernehmen");
+    cb.addEventListener("change",()=>{r.on=cb.checked;$("schImpSave").hidden=!schRows.some(x=>x.on);});
+    const f=el("div","flds");const mk=(type,key)=>{const x=document.createElement("input");x.type=type;x.value=r[key];x.addEventListener("input",()=>{r[key]=x.value;});return x;};
+    const note=mk("text","note");note.placeholder=r.name;f.append(note,mk("date","start"),mk("date","end"));
+    row.append(cb,f,el("small",null,r.name+(r.dup?", schon vorhanden":"")));box.append(row);
+  });
+  $("schImpSave").hidden=!schRows.some(x=>x.on);
+}
+$("schFile").addEventListener("change",async e=>{
+  const files=Array.from(e.target.files||[]);e.target.value="";if(!files.length)return;
+  const what=(schDlg.querySelector('input[name="schWhat"]:checked')||{}).value||"Kita";
+  const st=$("schImpStatus");st.hidden=false;st.style.color="";st.textContent="Datei wird gelesen.";
+  schRows=[];renderSchRev();
+  try{
+    let text="",images=[];
+    for(const f of files.slice(0,3)){
+      if(f.type==="application/pdf"||/\.pdf$/i.test(f.name)){const r=await readPdf(f);text+=r.text;images=images.concat(r.images);}
+      else images.push(await fileToDataUrl(f));
+    }
+    images=images.slice(0,3);
+    st.textContent="Wird mit Perplexity ausgelesen. Das kann etwas dauern.";
+    const prompt=[
+      "Lies aus "+(images.length?"den angehängten Bildern":"dem Text unten")+" alle Tage aus, an denen die "+what+" geschlossen ist, zum Beispiel Schließtage, Teamtage, Fortbildungstage, Brückentage oder Betriebsferien.",
+      "Heute ist "+todayIso+". Fehlt das Jahr, nimm das passende Jahr ab heute und beachte, dass ein Kita oder Schuljahr meist im August beginnt.",
+      "Gesetzliche Feiertage und Wochenenden nur aufnehmen, wenn sie mitten in einem zusammenhängenden Schließzeitraum liegen. Fasse aufeinanderfolgende Tage zu einem Zeitraum zusammen.",
+      "Antworte nur mit einem JSON Array von Objekten mit start und end (Datum als YYYY-MM-DD) und note (kurze Bezeichnung, z.B. Teamtag oder Sommerschließzeit). Keine Erklärungen. Wenn nichts erkennbar ist, antworte mit []."
+    ].join("\n")+(text?"\n\nText:\n"+text:"");
+    const r=await fetch("/.netlify/functions/kollegen-import?_="+Date.now(),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt:prompt,images:images})});
+    const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.error||"Fehler "+r.status);
+    const arr=parseJsonArray(data.text)||[],re=/^\d{4}-\d{2}-\d{2}$/;
+    schRows=arr.filter(x=>x&&re.test(x.start||"")).map(x=>{let s=x.start,en=re.test(x.end||"")?x.end:x.start;if(en<s){const t=s;s=en;en=t;}
+      const dup=state.schliess.some(y=>y.name===what&&y.start===s&&y.end===en);return{name:what,start:s,end:en,note:String(x.note||"").slice(0,120),on:!dup,dup:dup};});
+    renderSchRev();
+    if(schRows.length)st.textContent=plural(schRows.length,"Zeitraum","Zeiträume")+" erkannt. Bitte prüfen, bei Bedarf korrigieren und übernehmen.";
+    else{st.textContent="Es wurden keine Schließtage erkannt. Versuch einen schärferen Screenshot.";st.style.color="var(--bad)";}
+  }catch(err){st.textContent="Auslesen fehlgeschlagen: "+((err&&err.message)||"unbekannter Fehler");st.style.color="var(--bad)";}
+});
+$("schImpSave").addEventListener("click",async()=>{
+  const rows=schRows.filter(r=>r.on&&r.start&&r.end);let n=0;
+  for(const r of rows){let s=r.start,e=r.end;if(e<s){const t=s;s=e;e=t;}await save("schliess",newId(),{name:r.name,start:s,end:e,note:(r.note||"").trim(),updated:Date.now()});n++;}
+  schRows=[];renderSchRev();$("schImpStatus").textContent=plural(n,"Zeitraum","Zeiträume")+" übernommen.";renderSchList();toast("Schließtage übernommen.");
+});
 
 /* Stornierung */
 const stoDlg=$("stoDlg");let stoRef=null;
@@ -1655,6 +1801,7 @@ function dayInfo(k){
   Object.keys(hol).forEach(n=>info.push(["hol","Feiertag: "+n]));
   if(isBridge(ME,d))info.push(["br","Brückentag"]);
   ferienAt(k).forEach(f=>info.push([f.l==="HH"?"sfh":"sfs",f.n+" "+SCHOOL_NAME[f.l]]));
+  schliessAt(k).forEach(x=>info.push(["kt",x.name+" geschlossen"+(x.note?", "+x.note:"")]));
   const kol=state.kollegen.filter(x=>x.start<=k&&x.end>=k).map(x=>x.name);
   if(kol.length)info.push(["kol","Kollegen im Urlaub: "+Array.from(new Set(kol)).join(", ")]);
   return info;
