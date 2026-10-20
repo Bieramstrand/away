@@ -10,6 +10,14 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#F6F3EC" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#1C1B19" media="(prefers-color-scheme: dark)">
+<script>
+(function(){var t="auto";try{t=localStorage.getItem("away:theme")||"auto";}catch(e){}
+window.applyTheme=function(v){var r=document.documentElement;if(v==="light"||v==="dark")r.setAttribute("data-theme",v);else r.removeAttribute("data-theme");
+var dark=v==="dark"||(v!=="light"&&window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches);
+var cs=document.querySelector('meta[name="color-scheme"]');if(cs)cs.setAttribute("content",v==="auto"?"light dark":v);
+document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){m.setAttribute("content",dark?"#1C1B19":"#F6F3EC");});};
+applyTheme(t);})();
+</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
@@ -107,6 +115,7 @@ h2{font-family:"Fraunces",Georgia,serif;font-weight:400;font-size:1.5rem;margin:
 .mini.rto::after{content:"×";position:absolute;top:-2px;right:2px;font-size:.7rem;font-weight:700;color:var(--bad);line-height:1}
 .mini.br::after{content:"";position:absolute;top:2px;left:2px;border-left:6px solid var(--hol);border-bottom:6px solid transparent}
 .mini.hol::after{content:"";position:absolute;left:50%;bottom:2px;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--hol)}
+.kitem.off{opacity:.45}
 .mini.sfh{background:color-mix(in srgb,var(--fer) 28%,transparent)}
 .mini.sfs{background:var(--we) linear-gradient(var(--fer),var(--fer)) no-repeat 50% calc(100% - 2px)/70% 3px}
 .day.sfh:not(.c):not(.j):not(.cj):not(.sk):not(.kd):not(.au){background-color:color-mix(in srgb,var(--fer) 24%,transparent)}
@@ -267,7 +276,7 @@ dialog{overscroll-behavior:contain;touch-action:pan-y}
 .toast.show{display:block}
 
 .kgrp{border-bottom:1px solid var(--line)}
-.kgrp summary{list-style:none;display:grid;grid-template-columns:1fr auto auto;gap:2px 12px;align-items:center;padding:12px 4px;cursor:pointer}
+.kgrp summary{list-style:none;display:grid;grid-template-columns:1fr auto auto;gap:2px 12px;align-items:center;padding:14px 16px;cursor:pointer;border-radius:12px}
 .kgrp summary::-webkit-details-marker{display:none}
 .kgrp summary:hover{background:var(--surface)}
 .kgrp .t{font-weight:600}
@@ -275,9 +284,19 @@ dialog{overscroll-behavior:contain;touch-action:pan-y}
 .kgrp .pill{grid-column:2;grid-row:1 / span 2}
 .kgrp .chev{grid-column:3;grid-row:1 / span 2;color:var(--muted);font-size:1.1rem;transition:transform .15s}
 .kgrp[open] .chev{transform:rotate(90deg)}
-.krow{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;border:0;border-top:1px dashed var(--line);background:none;text-align:left;padding:9px 4px 9px 16px;font-size:.9rem}
+.krow{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;border:0;border-top:1px dashed var(--line);background:none;text-align:left;padding:10px 16px 10px 28px;font-size:.9rem}
 .krow:hover{background:var(--surface)}
 .krow.past{opacity:.5}
+.krow,.trip,.kgrp,.kgrp summary{box-sizing:border-box;max-width:100%}
+.actions .l{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.krow.storno .lleft>span:last-child{text-decoration:line-through;opacity:.7}
+#stoDlg .actions .r .save{grid-column:1 / -1}
+@media (max-width:560px){.dlg .actions .l{margin-bottom:8px}.dlg .actions .l .ghost{border-radius:12px;min-height:44px;font-size:.9rem}}
+.lleft{display:flex;align-items:center;gap:8px;min-width:0}
+.lleft>span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pdots{display:inline-flex;gap:3px;flex:none}
+.pdot{width:9px;height:9px;border-radius:50%;background:var(--pc);display:inline-block}
+.pdot.ring{background:transparent;box-shadow:inset 0 0 0 2px var(--pc)}
 .krow small{color:var(--muted);white-space:nowrap}
 .krow.bad span:first-child{color:var(--bad)}
 .kolbar{display:flex;gap:8px;flex-wrap:wrap}
@@ -378,7 +397,7 @@ a.ghost{text-decoration:none;color:inherit;display:inline-flex;align-items:cente
     <div class="list" id="list"></div>
   </section>
   <p class="foot" id="sync"><span class="dot"></span>Verbindung wird aufgebaut</p>
-  <p class="foot ver">Away Version 2.4</p>
+  <p class="foot ver">Away Version 2.9</p>
 </div>
 
 <div class="dock"><button class="primary" id="addBtn">Eintragen</button></div>
@@ -450,6 +469,7 @@ a.ghost{text-decoration:none;color:inherit;display:inline-flex;align-items:cente
         <label><input type="radio" name="status" value="geplant" checked><span>Geplant</span></label>
         <label><input type="radio" name="status" value="beantragt"><span>Beantragt</span></label>
         <label><input type="radio" name="status" value="genehmigt"><span>Genehmigt</span></label>
+        <label><input type="radio" name="status" value="storniert"><span>Storniert</span></label>
       </div>
     </div>
     <div id="pickWrap">
@@ -461,7 +481,7 @@ a.ghost{text-decoration:none;color:inherit;display:inline-flex;align-items:cente
     <label class="f">Notiz<textarea name="note" rows="2" maxlength="400"></textarea></label>
     <div class="preview" id="preview"></div>
     <div class="actions">
-      <button type="button" class="danger" id="delTrip">Löschen</button>
+      <div class="l"><button type="button" class="danger" id="delTrip">Löschen</button><button type="button" class="ghost" id="stoTrip">Stornieren</button></div>
       <div class="r">
         <button type="button" class="ghost" id="cancelTrip">Abbrechen</button>
         <button type="submit" class="save">Speichern</button>
@@ -495,6 +515,30 @@ a.ghost{text-decoration:none;color:inherit;display:inline-flex;align-items:cente
     <div class="seglabel">Automatische Sicherungen</div>
     <div class="list" id="bakList"></div>
     <div class="actions"><div class="r"><button type="button" class="ghost" id="bakClose">Schließen</button></div></div>
+  </div>
+</dialog>
+
+<dialog id="stoDlg">
+  <div class="dlg">
+    <h2>Urlaub stornieren</h2>
+    <div class="preview" id="stoInfo"></div>
+    <label class="check"><input type="checkbox" id="stoNew"><span>Gleich neuen Urlaub beantragen<small>Wird in derselben Mail mitgeschickt</small></span></label>
+    <div id="stoNewBox" hidden>
+      <div class="row">
+        <label class="f">Von<input type="date" id="stoStart"></label>
+        <label class="f">Bis<input type="date" id="stoEnd"></label>
+      </div>
+      <div class="preview" id="stoNewInfo" style="margin-top:10px"></div>
+    </div>
+    <label class="f">Name in der Mail<input id="stoName" autocomplete="off"></label>
+    <textarea id="stoText" class="exptext" rows="10" readonly></textarea>
+    <div class="actions"><div class="r">
+      <button type="button" class="save" id="stoCopy">Kopieren</button>
+      <a class="ghost" id="stoMail" target="_blank" rel="noopener">Mail öffnen</a>
+      <button type="button" class="ghost" id="stoShare" hidden>Teilen</button>
+      <button type="button" class="ghost" id="stoMark">Als storniert markieren</button>
+      <button type="button" class="ghost" id="stoClose">Schließen</button>
+    </div></div>
   </div>
 </dialog>
 
@@ -615,7 +659,7 @@ function recompute(){
   state.trips.forEach(t=>{if(typeOf(t)==="krank"&&t.au)t.who.forEach(p=>{if(auSet[p])entryDays(t,p).forEach(s=>auSet[p].add(s));});});
 }
 function tripDays(t,p,year){
-  if(t.who.indexOf(p)<0)return 0;
+  if(t.who.indexOf(p)<0||t.status==="storniert")return 0;
   if(!isPlan(t))return entryDays(t,p).filter(s=>year==null||s.slice(0,4)===String(year)).length;
   let n=0;eachDay(t.start,t.end,d=>{if((year==null||d.getFullYear()===year)&&isWork(p,d)&&!auSet[p].has(iso(d)))n++;});return n;
 }
@@ -693,7 +737,7 @@ function render(){
 function renderLede(){
   const L=$("lede");L.textContent="";
   if(state.mode==="loading"){L.textContent="Daten werden geladen.";return;}
-  const up=state.trips.filter(t=>typeOf(t)==="urlaub"&&t.end>=todayIso).sort((a,b)=>a.start<b.start?-1:1);
+  const up=state.trips.filter(t=>typeOf(t)==="urlaub"&&t.status!=="storniert"&&t.end>=todayIso).sort((a,b)=>a.start<b.start?-1:1);
   if(!up.length){L.textContent="Noch nichts geplant. Zeit, sich gemeinsam etwas auszusuchen.";return;}
   const t=up[0],both=t.who.length===2,who=both?"Ihr beide":nm(t.who[0]);
   if(t.start<=todayIso){L.append(who+(both?" seid":" ist")+" gerade im Urlaub: ");L.append(el("strong",null,t.title||"Urlaub"));return;}
@@ -782,12 +826,12 @@ function renderKeys(){
   const groups=[
     ["Urlaub",[["c",nm("christian")],["j",nm("julia")],["cj","Gemeinsam"],["tent","Nicht genehmigt"],["bu","Bildungsurlaub"]]],
     ["Krankheit",[["sk","Krank"],["au","Krank mit AU"],["kd","Kind krank"],["sk rto","Abgelehnter Tag"]]],
-    ["Kalender",[["hol","Feiertag"],["br","Brückentag"]].concat(ferienOn.indexOf("HH")>=0?[["sfh","Schulferien HH"]]:[]).concat(ferienOn.indexOf("SH")>=0?[["sfs","Schulferien SH"]]:[]).concat(state.kollegen.length?[["kol","Kollegen"],["clash","Überschneidung"]]:[])]
+    ["Kalender",[["hol","Feiertag"],["br","Brückentag"],["sfh"+(ferienOn.indexOf("HH")>=0?"":" off"),"Schulferien HH"],["sfs"+(ferienOn.indexOf("SH")>=0?"":" off"),"Schulferien SH"]].concat(state.kollegen.length?[["kol","Kollegen"],["clash","Überschneidung"]]:[])]
   ];
   groups.forEach(([title,items])=>{
     const g=el("div","kgroup");g.append(el("h4",null,title));
     const list=el("div","kitems");
-    items.forEach(([cls,label])=>{const it=el("div","kitem");it.append(el("span","mini "+cls),el("span","lab",label));list.append(it);});
+    items.forEach(([cls,label])=>{const off=/\boff\b/.test(cls);const it=el("div","kitem"+(off?" off":""));it.append(el("span","mini "+cls.replace(" off","")),el("span","lab",label+(off?" (aus)":"")));list.append(it);});
     g.append(list);k.append(g);
   });
 }
@@ -795,6 +839,7 @@ function renderMonths(y){
   const map={};
   state.trips.forEach(t=>{
     const ty=typeOf(t);
+    if((ty==="urlaub"||ty==="bildung")&&t.status==="storniert")return;
     if(ty==="urlaub"||ty==="bildung"){eachDay(t.start,t.end,d=>{if(d.getFullYear()!==y)return;const k=iso(d);const m=map[k]||(map[k]={who:{},ok:false,sick:null});t.who.forEach(p=>{m.who[p]=true;});if(ty==="bildung")m.bu=true;if(t.status==="genehmigt")m.ok=true;});}
     else{t.who.forEach(p=>{eachDay(t.start,t.end,d=>{if(d.getFullYear()!==y)return;const k=iso(d);const m=map[k]||(map[k]={who:{},ok:false,sick:null});if(!m.sick)m.sick={p:p,ty:ty,au:!!t.au,rto:!!t.rto};});});}
   });
@@ -828,28 +873,44 @@ function renderMonths(y){
     card.append(g);box.append(card);
   }
 }
+const listOpen=(()=>{try{const v=localStorage.getItem("away:listOpen");return new Set(v==null?["urlaub"]:v.split(",").filter(Boolean));}catch(e){return new Set(["urlaub"]);}})();
+function saveListOpen(){try{localStorage.setItem("away:listOpen",Array.from(listOpen).join(","));}catch(e){}}
 function renderList(y){
   const box=$("list");box.textContent="";
   const ts=state.trips.filter(t=>inYear(t,y)).sort((a,b)=>a.start<b.start?-1:a.start>b.start?1:0);
   if(!ts.length){box.append(el("div","empty",state.mode==="loading"?"Lädt.":"Für "+y+" ist noch nichts eingetragen. Tippe auf einen Tag im Kalender oder auf „Eintragen“."));return;}
-  ts.forEach(t=>{
-    const ty=typeOf(t);
-    const r=el("button","trip"+(t.end<todayIso?" past":""));r.type="button";
-    r.append(el("div","t",t.title||TYPES[ty]));
-    const parts=t.who.map(p=>{const n=tripDays(t,p,y);return nm(p)+" "+(isPlan(t)?plural(n,"Tag","Tage"):plural(n,"Arbeitstag","Arbeitstage"));});
-    r.append(el("div","d",fmtRange(t.start,t.end)+", "+parts.join(", ")));
-    const right=el("div","r");const ch=el("div","chips");
-    t.who.forEach(p=>{const c=el("span","chip"+(isPlan(t)?"":" ring"),nm(p));if(isPlan(t))c.style.background=COLOR[p];else c.style.setProperty("--sc",COLOR[p]);ch.append(c);});
-    let stTxt,stCls;
-    if(isPlan(t)){stCls=t.status||"geplant";stTxt=(ty==="bildung"?"Bildung, ":"")+({geplant:"Geplant",beantragt:"Beantragt",genehmigt:"Genehmigt"}[stCls]||"Geplant");}
-    else{stCls=t.au?"solid":"";stTxt=TYPES[ty]+(t.au?", mit AU":", ohne AU")+(t.rto?", RTO":"");}
-    right.append(ch,el("span","status "+stCls,stTxt));
-    if(isPlan(t)&&t.who.indexOf(ME)>=0){const ns=state.kollegen.filter(k=>overlap(t,k)).map(k=>k.name);if(ns.length)right.append(el("span","pill bad","Überschneidung mit "+ns.join(", ")));}
-    r.append(right);
-    r.addEventListener("click",()=>openTrip(t));
-    box.append(r);
+  const GROUPS=[["urlaub","Urlaub"],["bildung","Bildungsurlaub"],["krank","Krank"],["kindkrank","Kind krank"]];
+  GROUPS.forEach(([ty,title])=>{
+    const items=ts.filter(t=>typeOf(t)===ty);if(!items.length)return;
+    const det=el("details","kgrp");if(listOpen.has(ty))det.open=true;
+    det.addEventListener("toggle",()=>{if(det.open)listOpen.add(ty);else listOpen.delete(ty);saveListOpen();});
+    const sum=el("summary");sum.append(el("div","t",title));
+    const per=PEOPLE.map(p=>{const n=items.reduce((a,t)=>a+tripDays(t,p,y),0);return n?nm(p)+" "+plural(n,"Tag","Tage"):null;}).filter(Boolean);
+    const next=isPlanType(ty)?items.find(t=>t.end>=todayIso&&t.status!=="storniert"):null;
+    sum.append(el("div","d",plural(items.length,"Eintrag","Einträge")+(per.length?", "+per.join(", "):"")+(next?", nächster: "+fmtRange(next.start,next.end):"")));
+    const clashes=isPlanType(ty)?items.filter(t=>t.who.indexOf(ME)>=0&&state.kollegen.some(k=>overlap(t,k))).length:0;
+    if(clashes)sum.append(el("span","pill bad",plural(clashes,"Überschneidung","Überschneidungen")));
+    sum.append(el("span","chev","›"));det.append(sum);
+    items.forEach(t=>{
+      const r=el("button","krow lrow"+(t.end<todayIso?" past":""));r.type="button";
+      const left=el("span","lleft");
+      const dots=el("span","pdots");t.who.forEach(p=>{const d=el("i","pdot"+(isPlan(t)?"":" ring"));d.style.setProperty("--pc",COLOR[p]);d.title=nm(p);dots.append(d);});
+      left.append(dots,el("span",null,fmtRange(t.start,t.end)+(t.title?", "+t.title:"")));
+      const n=t.who.map(p=>tripDays(t,p,y));const days=Math.max.apply(null,n);
+      let st;
+      if(t.status==="storniert")r.classList.add("storno");
+      if(isPlan(t))st=({geplant:"geplant",beantragt:"beantragt",genehmigt:"genehmigt",storniert:"storniert"}[t.status]||"geplant");
+      else st=(t.au?"mit AU":"ohne AU")+(t.rto?", RTO":"");
+      const hit=isPlan(t)&&t.who.indexOf(ME)>=0&&state.kollegen.some(k=>overlap(t,k));
+      if(hit)r.classList.add("bad");
+      r.append(left,el("small",null,(hit?"Überschneidung, ":"")+plural(days,"Tag","Tage")+", "+st));
+      r.addEventListener("click",()=>openTrip(t));
+      det.append(r);
+    });
+    box.append(det);
   });
 }
+function isPlanType(ty){return ty==="urlaub"||ty==="bildung";}
 function renderSync(){
   const s=$("sync");s.textContent="";const d=el("span","dot");
   if(state.mode==="sync"){d.classList.add("on");s.append(d,"Synchronisiert, Änderungen sind sofort für beide sichtbar");}
@@ -1015,7 +1076,7 @@ function updatePreview(){
 function openTrip(t,presetDate){
   buildWho();editing=t||null;pickState={};
   const ty=t?typeOf(t):"urlaub";
-  $("delTrip").style.display=t?"":"none";
+  $("delTrip").style.display=t?"":"none";$("stoTrip").style.display=(t&&typeOf(t)==="urlaub"&&t.who.indexOf(ME)>=0&&(t.status==="beantragt"||t.status==="genehmigt"))?"":"none";
   tripForm.title.value=t?t.title||"":"";
   const d0=presetDate||todayIso;
   tripForm.start.value=t?t.start:d0;tripForm.end.value=t?t.end:d0;endTouched=!!t&&t.end!==t.start;
@@ -1073,6 +1134,10 @@ $("delTrip").addEventListener("click",()=>{
 const setDlg=$("setDlg"),setForm=$("setForm");
 function openSettings(){
   const y=state.year,box=$("setFields");box.textContent="";
+  {const fs=el("fieldset");fs.append(el("legend",null,"Darstellung"));const seg=el("div","seg");let cur="auto";try{cur=localStorage.getItem("away:theme")||"auto";}catch(e){}
+   [["auto","Automatisch"],["light","Hell"],["dark","Dunkel"]].forEach(([v,l])=>{const lab=el("label");const i=document.createElement("input");i.type="radio";i.name="theme";i.value=v;i.checked=cur===v;
+     i.addEventListener("change",()=>{try{localStorage.setItem("away:theme",v);}catch(e){}window.applyTheme(v);});lab.append(i,el("span",null,l));seg.append(lab);});
+   fs.append(seg,el("div","subhead","Automatisch folgt der Einstellung deines iPhones. Gilt nur für dieses Gerät."));box.append(fs);}
   PEOPLE.forEach(p=>{
     const P=state.people[p],cfg=yearCfg(p,y);
     const fs=el("fieldset");const lg=el("legend",null,nm(p));lg.style.color=COLOR[p];fs.append(lg);
@@ -1134,7 +1199,7 @@ function exportText(sel){
   ps.forEach(p=>{
     const a=account(p,y);
     out.push("",nm(p));
-    const ts=state.trips.filter(t=>isPlan(t)&&t.who.indexOf(p)>=0&&inYear(t,y)).sort((a,b)=>a.start<b.start?-1:1);
+    const ts=state.trips.filter(t=>isPlan(t)&&t.status!=="storniert"&&t.who.indexOf(p)>=0&&inYear(t,y)).sort((a,b)=>a.start<b.start?-1:1);
     if(!ts.length)out.push("Noch nichts eingetragen");
     ts.forEach(t=>{
       const s=parse(t.start),e=parse(t.end),ks=isoWeek(s),ke=isoWeek(e);
@@ -1155,7 +1220,7 @@ const dmy=d=>pad(d.getDate())+"."+pad(d.getMonth()+1)+"."+String(d.getFullYear()
 const dmY=s=>{const d=parse(s);return pad(d.getDate())+"."+pad(d.getMonth()+1)+"."+d.getFullYear();};
 function expMode(){const c=expDlg.querySelector('input[name="expMode"]:checked');return c?c.value:"notes";}
 function antragDays(t,y){let n=0;eachDay(t.start,t.end,d=>{if(d.getFullYear()!==y)return;const w=d.getDay();if(w>=1&&w<=5&&!isHol(ME,d)&&!auSet[ME].has(iso(d)))n++;});return n;}
-function antTrips(y){return state.trips.filter(t=>typeOf(t)==="urlaub"&&t.who.indexOf(ME)>=0&&inYear(t,y)).sort((a,b)=>a.start<b.start?-1:1);}
+function antTrips(y){return state.trips.filter(t=>typeOf(t)==="urlaub"&&t.status!=="storniert"&&t.who.indexOf(ME)>=0&&inYear(t,y)).sort((a,b)=>a.start<b.start?-1:1);}
 function antOn(t){return antSel[t.id]!=null?antSel[t.id]:t.status!=="genehmigt";}
 function antYear(){return Number($("antYear").value)||state.year;}
 function renderAntList(){
@@ -1245,7 +1310,7 @@ $("shareExp").addEventListener("click",async()=>{
 
 /* Kollegen */
 function overlap(a,b){return a.start<=b.end&&b.start<=a.end?{start:a.start>b.start?a.start:b.start,end:a.end<b.end?a.end:b.end}:null;}
-function myTrips(){return state.trips.filter(t=>isPlan(t)&&t.who.indexOf(ME)>=0);}
+function myTrips(){return state.trips.filter(t=>isPlan(t)&&t.status!=="storniert"&&t.who.indexOf(ME)>=0);}
 function validKol(k){return k&&typeof k.name==="string"&&k.name.trim()!==""&&/^\d{4}-\d{2}-\d{2}$/.test(k.start||"")&&/^\d{4}-\d{2}-\d{2}$/.test(k.end||"");}
 function renderKol(y){
   const ban=$("kolBanner"),list=$("kolList");ban.textContent="";list.textContent="";
@@ -1485,6 +1550,65 @@ $("bakFile").addEventListener("change",e=>{
   rd.readAsText(f);
 });
 $("bakClose").addEventListener("click",()=>bakDlg.close());
+
+/* Stornierung */
+const stoDlg=$("stoDlg");let stoRef=null;
+function stoNewRange(){if(!$("stoNew").checked)return null;let s=$("stoStart").value,e=$("stoEnd").value;if(!s||!e)return null;if(e<s){const x=s;s=e;e=x;}return{start:s,end:e};}
+function stoLine(a){const y=parse(a.start).getFullYear();return "1. Urlaub: "+dmy(parse(a.start))+" - "+dmy(parse(a.end))+" - "+plural(antragDays(a,y),"Tag","Tage");}
+function stoSubject(){return (stoNewRange()?"Änderung Urlaub ":"Stornierung Urlaub ")+parse(stoRef.start).getFullYear();}
+function stoText(){
+  const nr=stoNewRange(),y=parse(stoRef.start).getFullYear();
+  const L=["Moin liebe Urlaubskommission,","","hiermit möchte ich folgenden Urlaub für "+y+" stornieren:",stoLine(stoRef)];
+  if(nr)L.push("","Stattdessen würde ich gerne folgenden Urlaub einreichen:",stoLine(nr));
+  L.push("","Lieben Gruß",$("stoName").value.trim()||nm(ME));
+  return L.join("\n");
+}
+function refreshSto(){
+  $("stoNewBox").hidden=!$("stoNew").checked;
+  const P=$("stoNewInfo");P.textContent="";
+  const nr=stoNewRange();
+  if(nr){
+    const back=antragDays(stoRef,parse(stoRef.start).getFullYear()),neu=antragDays(nr,parse(nr.start).getFullYear());
+    P.append(plural(neu,"Tag","Tage")+" neu, dafür "+plural(back,"Tag","Tage")+" zurück aufs Urlaubskonto.");
+    const cl=state.kollegen.filter(k=>overlap(nr,k)).map(k=>k.name);
+    if(cl.length){const h=el("span","hint","Überschneidung mit "+Array.from(new Set(cl)).join(", "));h.style.color="var(--bad)";P.append(h);}
+    const fe=ferienIn(nr.start,nr.end);if(fe.length)P.append(el("span","hint","In den Schulferien: "+Array.from(new Set(fe)).join(", ")));
+  }else if($("stoNew").checked)P.textContent="Zeitraum für den neuen Urlaub wählen.";
+  const txt=stoText();$("stoText").value=txt;
+  $("stoMail").href="mailto:"+MAIL+"?subject="+encodeURIComponent(stoSubject())+"&body="+encodeURIComponent(txt);
+  $("stoMark").textContent=nr?"Stornieren und neu eintragen":"Als storniert markieren";
+}
+function openSto(t){
+  stoRef=t;
+  $("stoInfo").textContent=(t.title?t.title+", ":"")+fmtRange(t.start,t.end)+", "+plural(antragDays(t,parse(t.start).getFullYear()),"Tag","Tage")+", "+(t.status==="genehmigt"?"genehmigt":"beantragt");
+  $("stoNew").checked=false;$("stoStart").value=t.start;$("stoEnd").value=t.end;
+  $("stoName").value=state.people[ME].mailName||nm(ME);
+  $("stoShare").hidden=!navigator.share;
+  refreshSto();stoDlg.showModal();
+}
+$("stoTrip").addEventListener("click",()=>{if(!editing)return;const t=editing;tripDlg.close();openSto(t);});
+$("stoNew").addEventListener("change",refreshSto);
+$("stoName").addEventListener("input",refreshSto);
+["stoStart","stoEnd"].forEach(id=>{const f=$(id);const h=()=>{if(id==="stoStart"&&$("stoStart").value&&(!$("stoEnd").value||$("stoEnd").value<$("stoStart").value))$("stoEnd").value=$("stoStart").value;refreshSto();paintDates();};f.addEventListener("input",h);f.addEventListener("change",h);});
+$("stoCopy").addEventListener("click",async()=>{
+  const txt=$("stoText").value;
+  try{await navigator.clipboard.writeText(txt);toast("Kopiert. Betreff: "+stoSubject());return;}catch(e){}
+  const ta=$("stoText");ta.focus();ta.select();ta.setSelectionRange(0,txt.length);let ok=false;try{ok=document.execCommand("copy");}catch(e){}
+  toast(ok?"Kopiert. Betreff: "+stoSubject():"Text ist markiert, bitte über Kopieren übernehmen.");
+});
+$("stoShare").addEventListener("click",async()=>{try{await navigator.share({title:stoSubject(),text:$("stoText").value});}catch(e){if(!e||e.name!=="AbortError")toast("Teilen klappt hier nicht, bitte Kopieren nutzen.");}});
+$("stoMark").addEventListener("click",async()=>{
+  const t=stoRef,nr=stoNewRange();
+  if($("stoNew").checked&&!nr){toast("Bitte Zeitraum für den neuen Urlaub wählen.");return;}
+  const base=Object.assign({},t,{type:typeOf(t)});
+  if(t.who.length>1){
+    await writeTrip(Object.assign({},base,{who:t.who.filter(p=>p!==ME)}));
+    await writeTrip(Object.assign({},base,{id:newId(),who:[ME],status:"storniert"}));
+  }else await writeTrip(Object.assign({},base,{status:"storniert"}));
+  if(nr)await writeTrip({id:newId(),type:"urlaub",title:t.title||"",start:nr.start,end:nr.end,who:[ME],status:"beantragt",note:"Ersatz für "+fmtRange(t.start,t.end)});
+  stoDlg.close();toast(nr?"Storniert und neuen Urlaub als beantragt eingetragen.":"Als storniert markiert.");
+});
+$("stoClose").addEventListener("click",()=>stoDlg.close());
 
 /* Datumsfelder: eigene Anzeige, natives Auswahlrad darüber */
 function enhanceDates(){document.querySelectorAll(".row label.f input[type=date]").forEach(inp=>{if(inp.parentNode.classList.contains("datebox"))return;const box=el("span","datebox");inp.parentNode.insertBefore(box,inp);box.append(el("span","dv"),inp);});}
