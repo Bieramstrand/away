@@ -405,7 +405,7 @@ a.ghost{text-decoration:none;color:inherit;display:inline-flex;align-items:cente
     <div class="list" id="list"></div>
   </section>
   <p class="foot" id="sync"><span class="dot"></span>Verbindung wird aufgebaut</p>
-  <p class="foot ver">Away Version 3.5</p>
+  <p class="foot ver">Away Version 3.6</p>
 </div>
 
 <div class="dock"><button class="primary" id="addBtn">Eintragen</button></div>
@@ -639,17 +639,25 @@ const FIREBASE_CONFIG={
 (function(){
 const PEOPLE=["christian","julia"];
 const COLOR={christian:"var(--c)",julia:"var(--j)"};
-const DEFAULTS={
-  christian:{name:"Christian",bundesland:"HH",workdays:[1,2,3,4,5],years:{},extraName:"Thanksgiving",extraDefault:3,bv:true,stunden:32,vollzeit:40,kinder:1,kindPaid:10,bildungBase:5,mailName:"",aspekte:""},
-  julia:{name:"Julia",bundesland:"SH",workdays:[1,2,3,4,5],years:{},extraName:"",extraDefault:0,bv:false,stunden:40,vollzeit:40,kinder:1,kindPaid:0,bildungBase:0,mailName:"",aspekte:""}
+/* Profile: Die Adresse entscheidet, wessen Daten geladen werden. Enthält der Seitenname "ingwar", läuft das Profil von Ingwar. */
+const PROFILES={
+  standard:{prefix:"urlaubstage",people:{
+    christian:{name:"Christian",bundesland:"HH",workdays:[1,2,3,4,5],years:{},extraName:"Thanksgiving",extraDefault:3,bv:true,stunden:32,vollzeit:40,kinder:1,kindPaid:10,bildungBase:5,mailName:"",aspekte:""},
+    julia:{name:"Julia",bundesland:"SH",workdays:[1,2,3,4,5],years:{},extraName:"",extraDefault:0,bv:false,stunden:40,vollzeit:40,kinder:1,kindPaid:0,bildungBase:0,mailName:"",aspekte:""}}},
+  ingwar:{prefix:"away_ingwar",people:{
+    christian:{name:"Ingwar",bundesland:"HH",workdays:[1,2,3,4,5],years:{},extraName:"Thanksgiving",extraDefault:3,bv:true,stunden:40,vollzeit:40,kinder:0,kindPaid:0,bildungBase:5,mailName:"",aspekte:""},
+    julia:{name:"Partnerin",bundesland:"HH",workdays:[1,2,3,4,5],years:{},extraName:"",extraDefault:0,bv:false,stunden:40,vollzeit:40,kinder:0,kindPaid:0,bildungBase:0,mailName:"",aspekte:""}}}
 };
+const PROFILE_ID=/ingwar/i.test(location.hostname)||/[?&]profil=ingwar/i.test(location.search)?"ingwar":"standard";
+const PROFILE=PROFILES[PROFILE_ID],PREFIX=PROFILE.prefix;
+const DEFAULTS=PROFILE.people;
 const LAENDER={BW:"Baden Württemberg",BY:"Bayern",BE:"Berlin",BB:"Brandenburg",HB:"Bremen",HH:"Hamburg",HE:"Hessen",MV:"Mecklenburg Vorpommern",NI:"Niedersachsen",NW:"Nordrhein Westfalen",RP:"Rheinland Pfalz",SL:"Saarland",SN:"Sachsen",ST:"Sachsen Anhalt",SH:"Schleswig Holstein",TH:"Thüringen"};
 const MONTHS=["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
 const MSHORT=["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
 const WDS=["So","Mo","Di","Mi","Do","Fr","Sa"];
 const WD=[["Mo",1],["Di",2],["Mi",3],["Do",4],["Fr",5],["Sa",6],["So",0]];
 const TYPES={urlaub:"Urlaub",bildung:"Bildungsurlaub",krank:"Krank",kindkrank:"Kind krank"};
-const LSKEY="urlaubstage:v1";
+const LSKEY=PREFIX+":v1";
 
 const clone=o=>JSON.parse(JSON.stringify(o));
 const $=id=>document.getElementById(id);
@@ -977,7 +985,7 @@ let toastT;function toast(msg){const t=$("toast");t.textContent=msg;t.classList.
 /* Speicher */
 function loadLocal(){try{const raw=localStorage.getItem(LSKEY);if(raw){const o=JSON.parse(raw);PEOPLE.forEach(p=>{if(o.people&&o.people[p])state.people[p]=Object.assign(clone(DEFAULTS[p]),o.people[p]);});if(Array.isArray(o.trips))state.trips=o.trips.filter(validTrip);if(Array.isArray(o.kollegen))state.kollegen=o.kollegen.filter(validKol);if(Array.isArray(o.schliess))state.schliess=o.schliess.filter(validKol);}}catch(e){}}
 function saveLocal(){try{localStorage.setItem(LSKEY,JSON.stringify({people:state.people,trips:state.trips,kollegen:state.kollegen,schliess:state.schliess}));}catch(e){}}
-const COL="household",KEYS={people:"urlaubstage:people",trips:"urlaubstage:trips",kollegen:"urlaubstage:kollegen",schliess:"urlaubstage:schliess",meta:"urlaubstage:meta"};
+const COL="household",KEYS={people:PREFIX+":people",trips:PREFIX+":trips",kollegen:PREFIX+":kollegen",schliess:PREFIX+":schliess",meta:PREFIX+":meta"};
 let lastRev=null,lastFull=0;
 function bumpRev(){if(!db)return Promise.resolve();return ref("meta").set({rev:Date.now()+"_"+Math.random().toString(36).slice(2,7),updated:Date.now()}).catch(e=>console.error(e));}
 let pendingWrites=0,lastSig="";
@@ -1534,7 +1542,7 @@ $("impSave").addEventListener("click",async()=>{
 $("impClose").addEventListener("click",()=>{if(impCtl)impCtl.abort();impDlg.close();});
 
 /* Datensicherung */
-const BAK="urlaubstage:backup:",BAKLS="urlaubstage:lastBackup",bakDlg=$("bakDlg");
+const BAK=PREFIX+":backup:",BAKLS=PREFIX+":lastBackup",bakDlg=$("bakDlg");
 function toMap(arr){const o={};arr.forEach(x=>{const c=clone(x);delete c.id;o[x.id]=c;});return o;}
 function snapshot(){return{app:"urlaubstage",version:1,created:new Date().toISOString(),people:clone(state.people),trips:toMap(state.trips),kollegen:toMap(state.kollegen),schliess:toMap(state.schliess)};}
 function validBackup(b){return !!(b&&typeof b==="object"&&b.people&&typeof b.people==="object"&&b.trips&&typeof b.trips==="object"&&b.kollegen&&typeof b.kollegen==="object");}
@@ -1566,7 +1574,7 @@ async function restore(b,label){
       }finally{pendingWrites--;}
       lastSig="";await poll(true);
     }else{
-      try{localStorage.setItem("urlaubstage:vorher",JSON.stringify(cur));}catch(e){}
+      try{localStorage.setItem(PREFIX+":vorher",JSON.stringify(cur));}catch(e){}
       PEOPLE.forEach(p=>{if(b.people[p])state.people[p]=Object.assign(clone(DEFAULTS[p]),b.people[p]);});
       state.trips=Object.keys(b.trips).map(id=>Object.assign({id:id},b.trips[id])).filter(validTrip);
       state.kollegen=Object.keys(b.kollegen).map(id=>Object.assign({id:id},b.kollegen[id])).filter(validKol);
