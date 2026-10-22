@@ -297,8 +297,13 @@ dialog{overscroll-behavior:contain;touch-action:manipulation}
 .h2year{color:var(--muted);font-weight:400}
 .daybody{display:flex;flex-direction:column;gap:10px}
 .daybody .krow{border-top:1px solid var(--line);padding-left:4px}
-.day .ktm{position:absolute;right:3px;bottom:3px;width:5px;height:5px;background:var(--kita);transform:rotate(45deg);pointer-events:none}
-.mini.kt::after{content:"";position:absolute;right:3px;bottom:3px;width:6px;height:6px;background:var(--kita);transform:rotate(45deg)}
+.day .ktm{position:absolute;right:-2px;top:-2px;width:7px;height:7px;background:var(--kita);transform:rotate(45deg);border:1.5px solid var(--surface);pointer-events:none;z-index:2}
+.day.ktd{box-shadow:inset 0 0 0 1.5px var(--kita)}
+.krow.sel{background:color-mix(in srgb,var(--kita) 18%,transparent)}
+.flash{animation:flash 1.2s ease}
+@keyframes flash{0%{background:color-mix(in srgb,var(--kita) 30%,transparent)}100%{background:transparent}}
+.mini.kt{box-shadow:inset 0 0 0 1.5px var(--kita)}
+.mini.kt::after{content:"";position:absolute;right:1px;top:1px;width:7px;height:7px;background:var(--kita);transform:rotate(45deg)}
 .ferbar .ferlink{border:0;background:none;color:var(--muted);text-decoration:underline;text-underline-offset:3px;padding:4px 6px}
 .lleft{display:flex;align-items:center;gap:8px;min-width:0}
 .lleft>span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -405,7 +410,7 @@ a.ghost{text-decoration:none;color:inherit;display:inline-flex;align-items:cente
     <div class="list" id="list"></div>
   </section>
   <p class="foot" id="sync"><span class="dot"></span>Verbindung wird aufgebaut</p>
-  <p class="foot ver">Away Version 3.6</p>
+  <p class="foot ver">Away Version 3.7</p>
 </div>
 
 <div class="dock"><button class="primary" id="addBtn">Eintragen</button></div>
@@ -564,7 +569,7 @@ a.ghost{text-decoration:none;color:inherit;display:inline-flex;align-items:cente
 <dialog id="schDlg">
   <div class="dlg">
     <h2>Kita und Schule Schließtage</h2>
-    <div class="preview">Gilt für euch beide und wird synchronisiert. Im Kalender als kleine lila Raute unten rechts.</div>
+    <div class="preview">Gilt für euch beide und wird synchronisiert. Im Kalender mit lila Rahmen und Raute oben rechts. Zum Ändern einen Eintrag antippen.</div>
     <div class="list" id="schList"></div>
     <div class="bakbtns"><label class="ghost bakfile">PDF oder Screenshot importieren<input type="file" id="schFile" accept="application/pdf,.pdf,image/*" multiple></label></div>
     <div class="preview" id="schImpStatus" hidden></div>
@@ -923,7 +928,7 @@ function renderMonths(y){
       if(m&&m.sick){b.classList.add(m.sick.ty==="krank"?"sk":"kd");b.style.setProperty("--sc",COLOR[m.sick.p]);label+=", "+nm(m.sick.p)+" "+TYPES[m.sick.ty].toLowerCase()+(m.sick.ty==="krank"?(m.sick.au?" mit AU":" ohne AU"):"");if(m.sick.au)b.classList.add("au");if(m.sick.rto){b.append(el("span","x","×"));label+=", abgelehnter Urlaub oder RTO";}}
       else if(m){const c=m.who.christian,j=m.who.julia;b.classList.add(c&&j?"cj":c?"c":"j");if(!m.ok)b.classList.add("tent");if(m.bu)b.classList.add("bu");label+=", frei: "+[c?nm("christian"):null,j?nm("julia"):null].filter(Boolean).join(" und ");}
       if(isBridge(ME,dt)){b.append(el("span","tri"));label+=", Brückentag";}
-      {const sc=schliessAt(k);if(sc.length){b.append(el("span","ktm"));label+=", geschlossen: "+sc.map(x=>x.name).join(", ");}}
+      {const sc=schliessAt(k);if(sc.length){b.append(el("span","ktm"));if(!b.classList.contains("sk")&&!b.classList.contains("kd")&&!b.classList.contains("clash"))b.classList.add("ktd");label+=", geschlossen: "+sc.map(x=>x.name).join(", ");}}
       {const fe=ferienAt(k);if(fe.length){if(fe.some(f=>f.l==="HH"))b.classList.add("sfh");if(fe.some(f=>f.l==="SH"))b.classList.add("sfs");label+=", "+fe.map(f=>f.n+" "+SCHOOL_SHORT[f.l]).join(", ");}}
       if(kmap[k]){b.classList.add("kol");label+=", Kollegen: "+kmap[k].join(", ");if(m&&!m.sick&&m.who[ME])b.classList.add("clash");}
       if(k===todayIso)b.classList.add("today");
@@ -1637,7 +1642,7 @@ function renderSchList(){
   items.forEach(x=>{const r=el("button","krow"+(x.end<todayIso?" past":""));r.type="button";
     const left=el("span","lleft");left.append(el("span","mini kt"),el("span",null,x.name+", "+fmtRange(x.start,x.end)));
     r.append(left,el("small",null,x.note||"bearbeiten ›"));
-    r.addEventListener("click",()=>schFill(x));box.append(r);});
+    r.addEventListener("click",()=>{box.querySelectorAll(".krow.sel").forEach(e=>e.classList.remove("sel"));r.classList.add("sel");schFill(x);const t=$("schFormTitle");t.scrollIntoView({behavior:"smooth",block:"start"});t.parentNode.classList.remove("flash");void t.offsetWidth;t.classList.add("flash");setTimeout(()=>t.classList.remove("flash"),1300);});box.append(r);});
 }
 function schFill(x){
   schEdit=x||null;
