@@ -410,7 +410,7 @@ a.ghost{text-decoration:none;color:inherit;display:inline-flex;align-items:cente
     <div class="list" id="list"></div>
   </section>
   <p class="foot" id="sync"><span class="dot"></span>Verbindung wird aufgebaut</p>
-  <p class="foot ver">Away Version 3.7</p>
+  <p class="foot ver">Away Version 3.8</p>
 </div>
 
 <div class="dock"><button class="primary" id="addBtn">Eintragen</button></div>
@@ -675,7 +675,7 @@ const typeOf=t=>["krank","kindkrank","bildung"].indexOf(t.type)>=0?t.type:"urlau
 const isPlan=t=>{const x=typeOf(t);return x==="urlaub"||x==="bildung";};
 
 let db=null;
-const state={year:new Date().getFullYear(),people:clone(DEFAULTS),trips:[],kollegen:[],schliess:[],mode:"loading",bvIdx:null};
+const state={year:new Date().getFullYear(),people:clone(DEFAULTS),trips:[],kollegen:[],schliess:[],teamKol:[],mode:"loading",bvIdx:null};
 const ME="christian";
 let auSet={christian:new Set(),julia:new Set()};
 
@@ -890,7 +890,7 @@ function renderKeys(){
   const groups=[
     ["Urlaub",[["c",nm("christian")],["j",nm("julia")],["cj","Gemeinsam"],["tent","Nicht genehmigt"],["bu","Bildungsurlaub"]]],
     ["Krankheit",[["sk","Krank"],["au","Krank mit AU"],["kd","Kind krank"],["sk rto","Abgelehnter Tag"]]],
-    ["Kalender",[["hol","Feiertag"],["br","Brückentag"],["sfh"+(ferienOn.indexOf("HH")>=0?"":" off"),"Schulferien HH"],["sfs"+(ferienOn.indexOf("SH")>=0?"":" off"),"Schulferien SH"],["kt"+(schliessOn?"":" off"),"Kita oder Schule zu"]].concat(state.kollegen.length?[["kol","Kollegen"],["clash","Überschneidung"]]:[])]
+    ["Kalender",[["hol","Feiertag"],["br","Brückentag"],["sfh"+(ferienOn.indexOf("HH")>=0?"":" off"),"Schulferien HH"],["sfs"+(ferienOn.indexOf("SH")>=0?"":" off"),"Schulferien SH"],["kt"+(schliessOn?"":" off"),"Kita oder Schule zu"]].concat(allKol().length?[["kol","Kollegen"],["clash","Überschneidung"]]:[])]
   ];
   groups.forEach(([title,items])=>{
     const g=el("div","kgroup");g.append(el("h4",null,title));
@@ -908,7 +908,7 @@ function renderMonths(y){
     else{t.who.forEach(p=>{eachDay(t.start,t.end,d=>{if(d.getFullYear()!==y)return;const k=iso(d);const m=map[k]||(map[k]={who:{},ok:false,sick:null});if(!m.sick)m.sick={p:p,ty:ty,au:!!t.au,rto:!!t.rto};});});}
   });
   const kmap={};
-  state.kollegen.forEach(kk=>{eachDay(kk.start,kk.end,d=>{if(d.getFullYear()!==y)return;const k=iso(d);(kmap[k]||(kmap[k]=[])).push(kk.name);});});
+  allKol().forEach(kk=>{eachDay(kk.start,kk.end,d=>{if(d.getFullYear()!==y)return;const k=iso(d);(kmap[k]||(kmap[k]=[])).push(kk.name);});});
   const H=Object.assign({},holidays(y,state.people.julia.bundesland),holidays(y,state.people.christian.bundesland));
   const box=$("months");box.textContent="";
   for(let mo=0;mo<12;mo++){
@@ -953,7 +953,7 @@ function renderList(y){
     const per=PEOPLE.map(p=>{const n=items.reduce((a,t)=>a+tripDays(t,p,y),0);return n?nm(p)+" "+plural(n,"Tag","Tage"):null;}).filter(Boolean);
     const next=isPlanType(ty)?items.find(t=>t.end>=todayIso&&t.status!=="storniert"):null;
     sum.append(el("div","d",plural(items.length,"Eintrag","Einträge")+(per.length?", "+per.join(", "):"")+(next?", nächster: "+fmtRange(next.start,next.end):"")));
-    const clashes=isPlanType(ty)?items.filter(t=>t.who.indexOf(ME)>=0&&state.kollegen.some(k=>overlap(t,k))).length:0;
+    const clashes=isPlanType(ty)?items.filter(t=>t.who.indexOf(ME)>=0&&allKol().some(k=>overlap(t,k))).length:0;
     if(clashes)sum.append(el("span","pill bad",plural(clashes,"Überschneidung","Überschneidungen")));
     sum.append(el("span","chev","›"));det.append(sum);
     items.forEach(t=>{
@@ -966,7 +966,7 @@ function renderList(y){
       if(t.status==="storniert")r.classList.add("storno");
       if(isPlan(t))st=({geplant:"geplant",beantragt:"beantragt",genehmigt:"genehmigt",storniert:"storniert"}[t.status]||"geplant");
       else st=(t.au?"mit AU":"ohne AU")+(t.rto?", RTO":"");
-      const hit=isPlan(t)&&t.who.indexOf(ME)>=0&&state.kollegen.some(k=>overlap(t,k));
+      const hit=isPlan(t)&&t.who.indexOf(ME)>=0&&allKol().some(k=>overlap(t,k));
       if(hit)r.classList.add("bad");
       r.append(left,el("small",null,(hit?"Überschneidung, ":"")+plural(days,"Tag","Tage")+", "+st));
       r.addEventListener("click",()=>openTrip(t));
@@ -990,7 +990,8 @@ let toastT;function toast(msg){const t=$("toast");t.textContent=msg;t.classList.
 /* Speicher */
 function loadLocal(){try{const raw=localStorage.getItem(LSKEY);if(raw){const o=JSON.parse(raw);PEOPLE.forEach(p=>{if(o.people&&o.people[p])state.people[p]=Object.assign(clone(DEFAULTS[p]),o.people[p]);});if(Array.isArray(o.trips))state.trips=o.trips.filter(validTrip);if(Array.isArray(o.kollegen))state.kollegen=o.kollegen.filter(validKol);if(Array.isArray(o.schliess))state.schliess=o.schliess.filter(validKol);}}catch(e){}}
 function saveLocal(){try{localStorage.setItem(LSKEY,JSON.stringify({people:state.people,trips:state.trips,kollegen:state.kollegen,schliess:state.schliess}));}catch(e){}}
-const COL="household",KEYS={people:PREFIX+":people",trips:PREFIX+":trips",kollegen:PREFIX+":kollegen",schliess:PREFIX+":schliess",meta:PREFIX+":meta"};
+const COL="household",KEYS={people:PREFIX+":people",trips:PREFIX+":trips",kollegen:PREFIX+":kollegen",schliess:PREFIX+":schliess",meta:PREFIX+":meta",team:"away_team:urlaub"};
+let teamSig="",teamKolSig="",teamLastRead=0;
 let lastRev=null,lastFull=0;
 function bumpRev(){if(!db)return Promise.resolve();return ref("meta").set({rev:Date.now()+"_"+Math.random().toString(36).slice(2,7),updated:Date.now()}).catch(e=>console.error(e));}
 let pendingWrites=0,lastSig="";
@@ -1060,7 +1061,7 @@ async function poll(force){
     state.trips=T&&typeof T==="object"?Object.keys(T).map(id=>Object.assign({id:id},T[id])).filter(validTrip):[];
     state.kollegen=K&&typeof K==="object"?Object.keys(K).map(id=>Object.assign({id:id},K[id])).filter(validKol):[];
     state.schliess=S&&typeof S==="object"?Object.keys(S).map(id=>Object.assign({id:id},S[id])).filter(validKol):[];
-    saveLocal();render();autoBackup();
+    saveLocal();render();autoBackup();syncTeamShare(false);
   }catch(e){console.error(e);state.mode="offline";renderSync();}
 }
 async function initDb(){
@@ -1069,8 +1070,9 @@ async function initDb(){
   try{firebase.initializeApp(FIREBASE_CONFIG);db=firebase.firestore();}catch(e){console.error(e);state.mode="local";render();return;}
   render();
   await poll(true);
-  setInterval(()=>poll(false),5000);
-  document.addEventListener("visibilitychange",()=>{if(!document.hidden)poll(true);});
+  pollTeam(true);
+  setInterval(()=>{poll(false);pollTeam(false);},5000);
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden){poll(true);pollTeam(true);}});
 }
 
 /* Eintrag Dialog */
@@ -1135,7 +1137,7 @@ function updatePreview(){
     if(ty==="bildung"){const p=who[0],y=parse(r.s).getFullYear(),ba=bildungAnspruch(p,y),used=bildungUsed(p,y)-(editing&&typeOf(editing)==="bildung"?tripDays(editing,p,y):0);P.append(el("span","hint","Danach "+(ba-used-tripDays(t,p,y))+" von "+ba+" Bildungsurlaubstagen "+y+" übrig."));}
     {const fe=ferienIn(r.s,r.e);if(fe.length)P.append(el("span","hint","In den Schulferien: "+Array.from(new Set(fe)).join(", ")));}
     {const sc=schliessOn?state.schliess.filter(x=>x.start<=r.e&&x.end>=r.s):[];if(sc.length)P.append(el("span","hint","Geschlossen: "+sc.map(x=>x.name+" "+fmtRange(x.start,x.end)).join(", ")));}
-    if(who.indexOf(ME)>=0){const ns=state.kollegen.filter(k=>overlap(t,k)).map(k=>k.name+" ("+fmtRange(k.start,k.end)+")");if(ns.length){const h=el("span","hint","Überschneidung mit "+ns.join(", "));h.style.color="var(--bad)";P.append(h);}}
+    if(who.indexOf(ME)>=0){const ns=allKol().filter(k=>overlap(t,k)).map(k=>k.name+" ("+fmtRange(k.start,k.end)+")");if(ns.length){const h=el("span","hint","Überschneidung mit "+ns.join(", "));h.style.color="var(--bad)";P.append(h);}}
     return;
   }
   const p=who[0],n=pickedDays().length;
@@ -1239,6 +1241,17 @@ function openSettings(){
     fs.append(mk("Kind krank Tage, voll bezahlt vom Arbeitgeber","kindPaid",kindPaid(p),"number"));
     fs.append(el("div","subhead","Bildungsurlaub"));
     two(mk("Tage pro Jahr","bildungBase",P.bildungBase||0,"number"),mk("Verfügbar "+y,"bildung",bildungAnspruch(p,y),"number"));
+    if(p===ME){
+      fs.append(el("div","subhead","Mit Kollegen verknüpfen"));
+      if(!db)fs.append(el("div","sub small","Nur verfügbar, wenn Firebase eingerichtet ist."));
+      const c1=el("label","check");const i1=document.createElement("input");i1.type="checkbox";i1.name=p+"_tshare";i1.checked=teamShare();c1.append(i1);
+      const t1=el("span",null,"Meinen Urlaub mit Kollegen teilen");t1.append(el("small",null,"Andere Away Nutzer sehen deinen Namen und die Urlaubszeiträume. Keine Krankheitstage, keine Notizen."));c1.append(t1);fs.append(c1);
+      const seg=el("div","seg");const mode=P.teamMode==="approved"?"approved":"all";
+      [["all","Alle Urlaube"],["approved","Nur beantragte und genehmigte"]].forEach(([v,l])=>{const lab=el("label");const i=document.createElement("input");i.type="radio";i.name=p+"_tmode";i.value=v;i.checked=mode===v;lab.append(i,el("span",null,l));seg.append(lab);});
+      fs.append(seg);
+      const c2=el("label","check");const i2=document.createElement("input");i2.type="checkbox";i2.name=p+"_tsee";i2.checked=teamSee();c2.append(i2);
+      const t2=el("span",null,"Urlaub verknüpfter Kollegen anzeigen");t2.append(el("small",null,"Erscheint unter Kollegen, mit Warnung bei Überschneidungen."+(teamNames().length?" Gerade verknüpft: "+teamNames().join(", ")+".":" Noch niemand verknüpft.")));c2.append(t2);fs.append(c2);
+    }
     box.append(fs);
   });
   setDlg.showModal();
@@ -1259,6 +1272,7 @@ setForm.addEventListener("submit",e=>{
     next[p].kinder=Math.round(n(f("kinder").value,0));
     next[p].kindPaid=n(f("kindPaid").value,0);
     next[p].bildungBase=n(f("bildungBase").value,0);
+    if(p===ME){next[p].teamShare=f("tshare").checked;next[p].teamSee=f("tsee").checked;const m=setForm.querySelector('input[name="'+p+'_tmode"]:checked');next[p].teamMode=m&&m.value==="approved"?"approved":"all";}
     next[p].years=next[p].years||{};
     const kindVal=n(f("kind").value,0),kindDef=(()=>{const save=state.people[p].kinder;state.people[p].kinder=next[p].kinder;const v=kindDefault(p,Number(y));state.people[p].kinder=save;return v;})();
     const yr={anspruch:n(f("anspruch").value,0),extra:n(f("extra").value,0),uebertrag:n(f("uebertrag").value,0)};
@@ -1267,7 +1281,7 @@ setForm.addEventListener("submit",e=>{
     if(buVal!==buDef)yr.bildung=buVal;
     next[p].years[y]=yr;
   });
-  setDlg.close();writePeople(next);toast("Einstellungen gespeichert.");
+  setDlg.close();writePeople(next);toast("Einstellungen gespeichert.");setTimeout(()=>{pollTeam(true);},900);
 });
 $("cancelSet").addEventListener("click",()=>setDlg.close());
 
@@ -1334,7 +1348,7 @@ function refreshAntrag(){
   else if(sum<30)line("warn","Empfehlung: 30 Tage verplanen, damit deine Wunschtermine bestmöglich gesichert sind.");
   else line("ok","Mindestens 25 Tage und Empfehlung von 30 Tagen erfüllt.");
   if(sum>tot)line("bad","Du beantragst mehr Tage, als du Anspruch hast.");
-  ts.forEach(t=>{const ns=state.kollegen.filter(k=>overlap(t,k)).map(k=>k.name);if(ns.length)line("bad","Überschneidung: "+fmtRange(t.start,t.end)+" mit "+ns.join(", ")+". Am besten vorher absprechen.");});
+  ts.forEach(t=>{const ns=allKol().filter(k=>overlap(t,k)).map(k=>k.name);if(ns.length)line("bad","Überschneidung: "+fmtRange(t.start,t.end)+" mit "+ns.join(", ")+". Am besten vorher absprechen.");});
   const F=FRIST[y];
   if(F){const left=Math.round((parse(F.frist)-parse(todayIso))/864e5);
     line(left<0?"bad":left<=7?"warn":"","Einsendeschluss "+dmY(F.frist)+(left<0?", vorbei. Der Antrag wird nur nachrangig berücksichtigt.":left===0?", heute.":", noch "+plural(left,"Tag","Tage")+".")+" Rückmeldung bis "+dmY(F.rueck)+".");}
@@ -1392,19 +1406,69 @@ $("shareExp").addEventListener("click",async()=>{
 function overlap(a,b){return a.start<=b.end&&b.start<=a.end?{start:a.start>b.start?a.start:b.start,end:a.end<b.end?a.end:b.end}:null;}
 function myTrips(){return state.trips.filter(t=>isPlan(t)&&t.status!=="storniert"&&t.who.indexOf(ME)>=0);}
 function validKol(k){return k&&typeof k.name==="string"&&k.name.trim()!==""&&/^\d{4}-\d{2}-\d{2}$/.test(k.start||"")&&/^\d{4}-\d{2}-\d{2}$/.test(k.end||"");}
+function teamSee(){return state.people[ME].teamSee!==false;}
+function teamShare(){return !!state.people[ME].teamShare;}
+function allKol(){
+  if(!state.teamKol.length||!teamSee())return state.kollegen;
+  const names=new Set(state.teamKol.map(k=>k.name.trim().toLowerCase()));
+  return state.kollegen.filter(k=>!names.has(k.name.trim().toLowerCase())).concat(state.teamKol);
+}
+function teamNames(){return Array.from(new Set(state.teamKol.map(k=>k.name)));}
+function teamEntry(){
+  const approvedOnly=state.people[ME].teamMode==="approved";
+  const items=state.trips.filter(t=>isPlan(t)&&t.status!=="storniert"&&t.who.indexOf(ME)>=0&&(!approvedOnly||t.status==="beantragt"||t.status==="genehmigt"))
+    .map(t=>({s:t.start,e:t.end,st:t.status||"geplant"})).sort((a,b)=>a.s<b.s?-1:a.s>b.s?1:0);
+  return{name:nm(ME).slice(0,60),items:items};
+}
+async function syncTeamShare(force){
+  if(!db)return;
+  const on=teamShare();
+  if(!on&&!force&&teamSig===""){teamSig="off";return;}
+  const e=on?teamEntry():null,sig=on?JSON.stringify(e):"off";
+  if(!force&&sig===teamSig)return;
+  try{
+    const fp=new firebase.firestore.FieldPath("value",PREFIX);
+    if(on){
+      e.updated=Date.now();
+      try{await ref("team").update(fp,e,"updated",Date.now());}
+      catch(x){if(x&&x.code==="not-found")await ref("team").set({value:{[PREFIX]:e},updated:Date.now()},{merge:true});else throw x;}
+    }else{
+      try{await ref("team").update(fp,firebase.firestore.FieldValue.delete(),"updated",Date.now());}
+      catch(x){if(!x||x.code!=="not-found")throw x;}
+    }
+    teamSig=sig;
+  }catch(x){console.error(x);}
+}
+async function pollTeam(force){
+  if(!db)return;
+  if(!force&&Date.now()-teamLastRead<28000)return;
+  if(!teamSee()){if(state.teamKol.length){state.teamKol=[];teamKolSig="";render();}return;}
+  teamLastRead=Date.now();
+  try{
+    const snap=await ref("team").get({source:"server"});
+    const v=snap.exists?parseValue((snap.data()||{}).value):null,out=[],re=/^\d{4}-\d{2}-\d{2}$/;
+    if(v&&typeof v==="object")Object.keys(v).forEach(key=>{
+      if(key===PREFIX)return;const o=v[key];
+      if(!o||typeof o.name!=="string"||!o.name.trim()||!Array.isArray(o.items))return;
+      o.items.forEach((it,i)=>{if(it&&re.test(it.s||"")&&re.test(it.e||""))out.push({id:"team:"+key+":"+i,name:o.name.trim().slice(0,60),start:it.s,end:it.e,note:"",status:it.st||"geplant",linked:true});});
+    });
+    const sig=JSON.stringify(out);
+    if(sig!==teamKolSig){teamKolSig=sig;state.teamKol=out;render();}
+  }catch(e){console.error(e);}
+}
 function renderKol(y){
   const ban=$("kolBanner"),list=$("kolList");ban.textContent="";list.textContent="";
   const ys=String(y),cl=[];
-  myTrips().forEach(t=>state.kollegen.forEach(k=>{const o=overlap(t,k);if(o&&o.start.slice(0,4)<=ys&&o.end.slice(0,4)>=ys)cl.push({t:t,k:k,o:o});}));
+  myTrips().forEach(t=>allKol().forEach(k=>{const o=overlap(t,k);if(o&&o.start.slice(0,4)<=ys&&o.end.slice(0,4)>=ys)cl.push({t:t,k:k,o:o});}));
   cl.sort((a,b)=>a.o.start<b.o.start?-1:1);
   const b=el("div","banner"+(cl.length?" bad":""));
   if(cl.length){
     b.append(plural(cl.length,"Überschneidung","Überschneidungen")+" mit Urlauben von "+nm(ME)+":");
     const ul=el("ul");cl.forEach(c=>ul.append(el("li",null,(c.t.title||"Urlaub")+" und "+c.k.name+": "+fmtRange(c.o.start,c.o.end))));b.append(ul);
-  }else b.textContent=state.kollegen.length?"Keine Überschneidungen zwischen "+nm(ME)+" und den Kollegen in "+y+".":"Noch keine Kollegen eingetragen. Importiere einen Screenshot oder trage Urlaube von Hand ein.";
+  }else b.textContent=allKol().length?"Keine Überschneidungen zwischen "+nm(ME)+" und den Kollegen in "+y+".":"Noch keine Kollegen eingetragen. Importiere einen Screenshot, trage Urlaube von Hand ein oder verknüpfe dich in den Einstellungen mit Kollegen, die Away nutzen.";
   ban.append(b);
   const groups={};
-  state.kollegen.filter(k=>inYear(k,y)).forEach(k=>{const key=k.name.trim().toLowerCase();(groups[key]||(groups[key]={name:k.name.trim(),items:[]})).items.push(k);});
+  allKol().filter(k=>inYear(k,y)).forEach(k=>{const key=k.name.trim().toLowerCase();(groups[key]||(groups[key]={name:k.name.trim(),items:[]})).items.push(k);});
   const wd=k=>{let n=0;eachDay(k.start,k.end,d=>{if(d.getFullYear()===y&&d.getDay()>0&&d.getDay()<6&&!isHol(ME,d))n++;});return n;};
   Object.keys(groups).sort((a,b)=>a.localeCompare(b,"de")).forEach(key=>{
     const g=groups[key];g.items.sort((a,b)=>a.start<b.start?-1:a.start>b.start?1:0);
@@ -1415,15 +1479,15 @@ function renderKol(y){
     const total=g.items.reduce((a,k)=>a+wd(k),0);
     const next=g.items.find(k=>k.end>=todayIso);
     sum.append(el("div","t",g.name));
-    sum.append(el("div","d",plural(g.items.length,"Zeitraum","Zeiträume")+", "+plural(total,"Tag","Tage")+(next?", nächster: "+fmtRange(next.start,next.end):"")));
+    sum.append(el("div","d",(g.items.some(k=>k.linked)?"verknüpft, ":"")+plural(g.items.length,"Zeitraum","Zeiträume")+", "+plural(total,"Tag","Tage")+(next?", nächster: "+fmtRange(next.start,next.end):"")));
     if(clash.length)sum.append(el("span","pill bad",plural(clash.length,"Überschneidung","Überschneidungen")));
     sum.append(el("span","chev","›"));
     det.append(sum);
     g.items.forEach(k=>{
       const hit=clash.indexOf(k)>=0;
-      const r=el("button","krow"+(k.end<todayIso?" past":"")+(hit?" bad":""));r.type="button";
-      r.append(el("span",null,fmtRange(k.start,k.end)+(k.note?", "+k.note:"")),el("small",null,(hit?"Überschneidung, ":"")+plural(wd(k),"Tag","Tage")));
-      r.addEventListener("click",()=>openKol(k));
+      const r=el(k.linked?"div":"button","krow"+(k.end<todayIso?" past":"")+(hit?" bad":""));if(!k.linked)r.type="button";
+      r.append(el("span",null,fmtRange(k.start,k.end)+(k.note?", "+k.note:"")),el("small",null,(hit?"Überschneidung, ":"")+plural(wd(k),"Tag","Tage")+(k.linked&&k.status?", "+k.status:"")));
+      if(!k.linked)r.addEventListener("click",()=>openKol(k));
       det.append(r);
     });
     list.append(det);
@@ -1745,7 +1809,7 @@ function refreshSto(){
   if(nr){
     const back=antragDays(stoRef,parse(stoRef.start).getFullYear()),neu=antragDays(nr,parse(nr.start).getFullYear());
     P.append(plural(neu,"Tag","Tage")+" neu, dafür "+plural(back,"Tag","Tage")+" zurück aufs Urlaubskonto.");
-    const cl=state.kollegen.filter(k=>overlap(nr,k)).map(k=>k.name);
+    const cl=allKol().filter(k=>overlap(nr,k)).map(k=>k.name);
     if(cl.length){const h=el("span","hint","Überschneidung mit "+Array.from(new Set(cl)).join(", "));h.style.color="var(--bad)";P.append(h);}
     const fe=ferienIn(nr.start,nr.end);if(fe.length)P.append(el("span","hint","In den Schulferien: "+Array.from(new Set(fe)).join(", ")));
   }else if($("stoNew").checked)P.textContent="Zeitraum für den neuen Urlaub wählen.";
@@ -1815,7 +1879,7 @@ function dayInfo(k){
   if(isBridge(ME,d))info.push(["br","Brückentag"]);
   ferienAt(k).forEach(f=>info.push([f.l==="HH"?"sfh":"sfs",f.n+" "+SCHOOL_NAME[f.l]]));
   schliessAt(k).forEach(x=>info.push(["kt",x.name+" geschlossen"+(x.note?", "+x.note:"")]));
-  const kol=state.kollegen.filter(x=>x.start<=k&&x.end>=k).map(x=>x.name);
+  const kol=allKol().filter(x=>x.start<=k&&x.end>=k).map(x=>x.name);
   if(kol.length)info.push(["kol","Kollegen im Urlaub: "+Array.from(new Set(kol)).join(", ")]);
   return info;
 }
