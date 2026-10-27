@@ -411,7 +411,7 @@ a.ghost{text-decoration:none;color:inherit;display:inline-flex;align-items:cente
     <div class="list" id="list"></div>
   </section>
   <p class="foot" id="sync"><span class="dot"></span>Verbindung wird aufgebaut</p>
-  <p class="foot ver">Away Version 3.9</p>
+  <p class="foot ver">Away Version 4.0</p>
 </div>
 
 <div class="dock"><button class="primary" id="addBtn">Eintragen</button></div>
@@ -1311,20 +1311,33 @@ $("cancelSet").addEventListener("click",()=>setDlg.close());
 /* Export */
 function isoWeek(d){const t=new Date(d.getFullYear(),d.getMonth(),d.getDate());t.setDate(t.getDate()+3-((t.getDay()+6)%7));const w1=new Date(t.getFullYear(),0,4);return 1+Math.round(((t-w1)/864e5-3+((w1.getDay()+6)%7))/7);}
 const dm=d=>pad(d.getDate())+"."+pad(d.getMonth()+1)+".";
+function weekSegments(t,p,y){
+  const out=[],end=parse(t.end);let cur=parse(t.start),guard=0;
+  while(cur<=end&&guard++<400){
+    const sun=addDays(cur,6-((cur.getDay()+6)%7));
+    let segEnd=sun<end?sun:end;
+    while(segEnd>cur&&(segEnd.getDay()===0||segEnd.getDay()===6))segEnd=addDays(segEnd,-1);
+    const seg=Object.assign({},t,{start:iso(cur),end:iso(segEnd)});
+    const n=tripDays(seg,p,y);
+    if(n>0)out.push({kw:isoWeek(cur),n:n,from:cur,to:segEnd,start:seg.start});
+    cur=addDays(sun,1);
+  }
+  return out;
+}
 function exportText(sel){
   const y=state.year,ps=sel==="beide"?PEOPLE:[sel],out=["Urlaub "+y];
+  const dd=d=>pad(d.getDate())+"."+pad(d.getMonth()+1)+(d.getFullYear()!==y?"."+d.getFullYear():"");
+  const line=sg=>"KW "+sg.kw+" | "+plural(sg.n,"Tag","Tage")+" | "+(sg.from.getTime()===sg.to.getTime()?dd(sg.from):dd(sg.from)+" bis "+dd(sg.to));
+  const segs=(p,ty)=>{let all=[];state.trips.filter(t=>typeOf(t)===ty&&t.status!=="storniert"&&t.who.indexOf(p)>=0&&inYear(t,y)).forEach(t=>{all=all.concat(weekSegments(t,p,y));});return all.sort((a,b)=>a.start<b.start?-1:a.start>b.start?1:0);};
   ps.forEach(p=>{
     const a=account(p,y);
-    out.push("",nm(p));
-    const ts=state.trips.filter(t=>isPlan(t)&&t.status!=="storniert"&&t.who.indexOf(p)>=0&&inYear(t,y)).sort((a,b)=>a.start<b.start?-1:1);
-    if(!ts.length)out.push("Noch nichts eingetragen");
-    ts.forEach(t=>{
-      const s=parse(t.start),e=parse(t.end),ks=isoWeek(s),ke=isoWeek(e);
-      const kw=ks===ke?"KW "+ks:"KW "+ks+" bis "+ke;
-      const rg=t.start===t.end?dm(s)+s.getFullYear():dm(s)+(s.getFullYear()!==e.getFullYear()?s.getFullYear():"")+" bis "+dm(e)+e.getFullYear();
-      out.push("• "+rg+" ("+kw+"), "+plural(tripDays(t,p,y),"Tag","Tage")+(typeOf(t)==="bildung"?", Bildungsurlaub":""));
-    });
-    out.push("Resturlaub: "+plural(a.rest,"Tag","Tage")+" nicht verplant (von "+a.total+")");
+    out.push("",nm(p)+":","");
+    const u=segs(p,"urlaub");
+    if(!u.length)out.push("Noch nichts eingetragen");
+    u.forEach(sg=>out.push(line(sg)));
+    const bu=segs(p,"bildung");
+    if(bu.length){out.push("","Bildungsurlaub:","");bu.forEach(sg=>out.push(line(sg)));}
+    out.push("","Verplant: "+plural(a.ok+a.pl,"Tag","Tage"),(a.rest<0?"Zu viel verplant: "+plural(-a.rest,"Tag","Tage")+" (von "+a.total+")":"Resturlaub: "+plural(a.rest,"Tag","Tage")+" nicht verplant (von "+a.total+")"));
   });
   return out.join("\n");
 }
