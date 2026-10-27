@@ -305,6 +305,7 @@ dialog{overscroll-behavior:contain;touch-action:manipulation}
 .mini.kt{box-shadow:inset 0 0 0 1.5px var(--kita)}
 .mini.kt::after{content:"";position:absolute;right:1px;top:1px;width:7px;height:7px;background:var(--kita);transform:rotate(45deg)}
 .ferbar .ferlink{border:0;background:none;color:var(--muted);text-decoration:underline;text-underline-offset:3px;padding:4px 6px}
+.linkbtn{border:0;background:none;color:var(--ink);text-decoration:underline;text-underline-offset:3px;padding:0;font-size:inherit;cursor:pointer}
 .lleft{display:flex;align-items:center;gap:8px;min-width:0}
 .lleft>span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pdots{display:inline-flex;gap:3px;flex:none}
@@ -410,7 +411,7 @@ a.ghost{text-decoration:none;color:inherit;display:inline-flex;align-items:cente
     <div class="list" id="list"></div>
   </section>
   <p class="foot" id="sync"><span class="dot"></span>Verbindung wird aufgebaut</p>
-  <p class="foot ver">Away Version 3.8</p>
+  <p class="foot ver">Away Version 3.9</p>
 </div>
 
 <div class="dock"><button class="primary" id="addBtn">Eintragen</button></div>
@@ -597,8 +598,9 @@ a.ghost{text-decoration:none;color:inherit;display:inline-flex;align-items:cente
   <div class="dlg">
     <h2>Export</h2>
     <div class="seg" id="expModeSeg">
-      <label><input type="radio" name="expMode" value="notes" checked><span>Für Notizen</span></label>
-      <label><input type="radio" name="expMode" value="antrag"><span>Urlaubsantrag Mail</span></label>
+      <label><input type="radio" name="expMode" value="notes" checked><span>Notizen</span></label>
+      <label><input type="radio" name="expMode" value="antrag"><span>Antrag Mail</span></label>
+      <label><input type="radio" name="expMode" value="cal"><span>Kalender</span></label>
     </div>
     <div id="expAntrag" hidden style="display:none;flex-direction:column;gap:12px">
       <div class="row">
@@ -610,6 +612,23 @@ a.ghost{text-decoration:none;color:inherit;display:inline-flex;align-items:cente
       <label class="f">RTO Wünsche (optional)<input id="antRto" autocomplete="off" placeholder="z.B. 10.07.27 und 27.07.27"></label>
       <div class="preview" id="antCheck"></div>
     </div>
+    <div id="expCal" hidden style="display:none;flex-direction:column;gap:12px">
+      <div class="row">
+        <label class="f">Jahr<select id="calYear"></select></label>
+        <label class="check" style="align-self:end;padding-bottom:12px"><input type="checkbox" id="calFix"><span>Geplante weglassen</span></label>
+      </div>
+      <div>
+        <div class="seglabel">Wessen Urlaub?</div>
+        <div class="seg" id="calWhoSeg">
+          <label><input type="radio" name="calWho" value="christian" checked><span id="calC">Christian</span></label>
+          <label><input type="radio" name="calWho" value="julia"><span id="calJ">Julia</span></label>
+          <label><input type="radio" name="calWho" value="beide"><span>Beide</span></label>
+        </div>
+      </div>
+      <div><div class="seglabel">Diese Urlaube übernehmen</div><div class="rev" id="calList"></div></div>
+      <div class="preview" id="calInfo"></div>
+      <div class="preview" id="calSubInfo" hidden>Mit „Abonnieren“ bleibt dein Kalender automatisch aktuell: neue, geänderte und stornierte Urlaube erscheinen von selbst. Es gilt die Auswahl von Person und „Geplante weglassen“. <button type="button" class="linkbtn" id="calNew">Neuen Link erzeugen</button></div>
+    </div>
     <div id="expNotes">
       <div class="seglabel">Für wen?</div>
       <div class="seg" id="expSeg">
@@ -620,6 +639,10 @@ a.ghost{text-decoration:none;color:inherit;display:inline-flex;align-items:cente
     </div>
     <textarea id="expText" class="exptext" rows="12" readonly></textarea>
     <div class="actions"><div class="r">
+      <button type="button" class="save" id="calAdd" hidden>In Kalender übernehmen</button>
+      <button type="button" class="ghost" id="calFile" hidden>Datei speichern</button>
+      <button type="button" class="ghost" id="calSub" hidden>Abonnieren</button>
+      <button type="button" class="ghost" id="calLink" hidden>Link kopieren</button>
       <button type="button" class="ghost" id="closeExp">Schließen</button>
       <a class="ghost" id="mailExp" hidden target="_blank" rel="noopener">Mail öffnen</a>
       <button type="button" class="ghost" id="antMark" hidden>Als beantragt</button>
@@ -1366,10 +1389,14 @@ function refreshExp(){
   const m=expMode();
   $("expNotes").hidden=m!=="notes";$("expAntrag").hidden=m!=="antrag";$("expAntrag").style.display=m==="antrag"?"flex":"none";
   $("mailExp").hidden=m!=="antrag";$("antMark").hidden=m!=="antrag";
-  if(m==="notes")$("expText").value=exportText(expSel());else refreshAntrag();
+  const cal=m==="cal";
+  $("expCal").hidden=!cal;$("expCal").style.display=cal?"flex":"none";$("expText").hidden=cal;
+  $("copyExp").hidden=cal;$("shareExp").hidden=cal||!navigator.share;
+  $("calAdd").hidden=!cal;$("calFile").hidden=!cal;$("calSub").hidden=!cal||!db;$("calLink").hidden=!cal||!db;
+  if(m==="notes")$("expText").value=exportText(expSel());else if(m==="antrag")refreshAntrag();else refreshCal();
 }
 $("openExport").addEventListener("click",()=>{
-  $("expC").textContent=nm("christian");$("expJ").textContent=nm("julia");$("shareExp").hidden=!navigator.share;
+  $("expC").textContent=nm("christian");$("expJ").textContent=nm("julia");$("shareExp").hidden=!navigator.share;initCal();
   const ny=new Date().getFullYear(),def=new Date().getMonth()>=8?ny+1:ny,sel=$("antYear");sel.textContent="";
   [ny,ny+1].forEach(v=>{const o=el("option",null,String(v));o.value=v;if(v===def)o.selected=true;sel.append(o);});
   $("antName").value=state.people[ME].mailName||nm(ME);$("antAsp").value=state.people[ME].aspekte||"";$("antRto").value="";antSel={};
@@ -1402,6 +1429,98 @@ $("shareExp").addEventListener("click",async()=>{
   catch(e){if(!e||e.name!=="AbortError")toast("Teilen klappt hier nicht, bitte Kopieren nutzen.");}
 });
 
+/* Kalender Export (iCal) */
+const calSel={};
+function calWho(){const c=expDlg.querySelector('input[name="calWho"]:checked');return c?c.value:ME;}
+function calYearV(){return Number($("calYear").value)||state.year;}
+function calFixOnly(){return $("calFix").checked;}
+function calTrips(y){
+  const who=calWho(),fix=calFixOnly();
+  return state.trips.filter(t=>isPlan(t)&&t.status!=="storniert"&&inYear(t,y)&&(who==="beide"||t.who.indexOf(who)>=0)&&(!fix||t.status==="beantragt"||t.status==="genehmigt"))
+    .sort((a,b)=>a.start<b.start?-1:a.start>b.start?1:0);
+}
+function calOn(t){return calSel[t.id]!=null?calSel[t.id]:true;}
+function icsEsc(t){return String(t==null?"":t).replace(/\\/g,"\\\\").replace(/;/g,"\\;").replace(/,/g,"\\,").replace(/\r?\n/g,"\\n");}
+function icsFold(line){
+  const enc=new TextEncoder(),parts=[];let cur="",bytes=0,limit=75;
+  for(const ch of line){const b=enc.encode(ch).length;if(bytes+b>limit){parts.push(cur);cur="";bytes=0;limit=74;}cur+=ch;bytes+=b;}
+  parts.push(cur);return parts.join("\r\n ");
+}
+function icsDay(s){return s.replace(/-/g,"");}
+function icsSummary(t,who){
+  const typ=typeOf(t)==="bildung"?"Bildungsurlaub":"Urlaub";
+  const names=who==="beide"?" "+t.who.map(nm).join(" und "):"";
+  const st=t.status==="genehmigt"?"":" ("+(t.status==="beantragt"?"beantragt":"geplant")+")";
+  return typ+names+(t.title?": "+t.title:"")+st;
+}
+function buildIcs(items,calName){
+  const stamp=new Date().toISOString().replace(/[-:]/g,"").replace(/\.\d{3}/,"");
+  const L=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//BierAmStrand//Away//DE","CALSCALE:GREGORIAN","METHOD:PUBLISH","X-WR-CALNAME:"+icsEsc(calName),"X-WR-TIMEZONE:Europe/Berlin"];
+  items.forEach(it=>{
+    L.push("BEGIN:VEVENT","UID:"+it.uid,"DTSTAMP:"+stamp,"DTSTART;VALUE=DATE:"+icsDay(it.start),"DTEND;VALUE=DATE:"+icsDay(iso(addDays(parse(it.end),1))),"SUMMARY:"+icsEsc(it.summary),"DESCRIPTION:"+icsEsc(it.desc),"STATUS:"+(it.fest?"CONFIRMED":"TENTATIVE"),"TRANSP:OPAQUE","SEQUENCE:"+Math.floor((it.updated||0)/60000),"END:VEVENT");
+  });
+  L.push("END:VCALENDAR");
+  return L.map(icsFold).join("\r\n")+"\r\n";
+}
+function calItems(){
+  const who=calWho();
+  return calTrips(calYearV()).filter(calOn).map(t=>({uid:"away-"+PREFIX+"-"+t.id+"@bieramstrand",start:t.start,end:t.end,summary:icsSummary(t,who),desc:"Status: "+(t.status||"geplant")+". Eingetragen mit Away.",fest:t.status==="genehmigt",updated:t.updated||0}));
+}
+function initCal(){
+  $("calC").textContent=nm("christian");$("calJ").textContent=nm("julia");
+  const r=expDlg.querySelector('input[name="calWho"][value="'+ME+'"]');if(r)r.checked=true;
+  $("calFix").checked=false;Object.keys(calSel).forEach(k=>delete calSel[k]);
+  const ny=new Date().getFullYear(),nxt=state.trips.filter(t=>isPlan(t)&&t.status!=="storniert"&&t.end>=todayIso).sort((a,b)=>a.start<b.start?-1:1)[0];
+  const def=nxt?parse(nxt.start).getFullYear():ny,sel=$("calYear");sel.textContent="";
+  [ny,ny+1].forEach(v=>{const o=el("option",null,String(v));o.value=v;if(v===def)o.selected=true;sel.append(o);});
+  renderCalList();
+}
+function renderCalList(){
+  const box=$("calList");box.textContent="";const y=calYearV(),ts=calTrips(y);
+  if(!ts.length){box.append(el("div","empty","Für "+y+" gibt es hier noch keinen Urlaub."));return;}
+  ts.forEach(t=>{
+    const l=el("label","check");const i=document.createElement("input");i.type="checkbox";i.checked=calOn(t);
+    i.addEventListener("change",()=>{calSel[t.id]=i.checked;refreshCal();});
+    const sp=el("span",null,fmtRange(t.start,t.end));
+    sp.append(el("small",null,(typeOf(t)==="bildung"?"Bildungsurlaub, ":"")+({geplant:"geplant",beantragt:"beantragt",genehmigt:"genehmigt"}[t.status]||"geplant")+(t.title?", "+t.title:"")));
+    l.append(i,sp);box.append(l);
+  });
+}
+function refreshCal(){
+  const n=calItems().length,P=$("calInfo");P.textContent="";
+  P.append(n?plural(n,"Termin","Termine")+" als ganztägige Einträge. Genehmigte sind fest, geplante und beantragte als vorläufig markiert.":"Nichts ausgewählt.");
+  $("calSubInfo").hidden=!db;
+}
+async function calDownload(items,viaShare){
+  const ics=buildIcs(items,"Away Urlaub"),name="away_urlaub_"+iso(new Date()).replace(/-/g,"_")+".ics";
+  const file=new File([ics],name,{type:"text/calendar"});
+  if(viaShare&&navigator.canShare&&navigator.canShare({files:[file]})){
+    try{await navigator.share({files:[file],title:"Urlaub"});return;}catch(e){if(e&&e.name==="AbortError")return;}
+  }
+  const u=URL.createObjectURL(new Blob([ics],{type:"text/calendar;charset=utf-8"})),a=document.createElement("a");
+  a.href=u;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);
+  toast(viaShare?"Datei erstellt. Öffne sie, um die Termine in den Kalender zu übernehmen.":"Datei gespeichert.");
+}
+async function ensureIcalToken(){
+  let tk=state.people[ME].icalToken;if(tk)return tk;
+  tk=Array.from(crypto.getRandomValues(new Uint8Array(16))).map(b=>b.toString(16).padStart(2,"0")).join("");
+  const next=clone(state.people);next[ME].icalToken=tk;await writePeople(next);return tk;
+}
+function feedUrl(tk,scheme){return scheme+"://"+location.host+"/.netlify/functions/ical?p="+PROFILE_ID+"&t="+tk+"&w="+calWho()+"&s="+(calFixOnly()?"fest":"alle");}
+$("calAdd").addEventListener("click",()=>{const it=calItems();if(!it.length){toast("Bitte mindestens einen Urlaub auswählen.");return;}calDownload(it,true);});
+$("calFile").addEventListener("click",()=>{const it=calItems();if(!it.length){toast("Bitte mindestens einen Urlaub auswählen.");return;}calDownload(it,false);});
+$("calSub").addEventListener("click",async()=>{const tk=await ensureIcalToken();window.location.href=feedUrl(tk,"webcal");});
+$("calLink").addEventListener("click",async()=>{
+  const tk=await ensureIcalToken(),url=feedUrl(tk,"https");
+  try{await navigator.clipboard.writeText(url);toast("Link kopiert. In den Kalender Einstellungen als Abo einfügen.");}catch(e){window.prompt("Link zum Kopieren:",url);}
+});
+$("calNew").addEventListener("click",async()=>{
+  if(!confirm("Neuen Link erzeugen? Der alte Link funktioniert danach nicht mehr, abonnierte Kalender musst du neu hinzufügen."))return;
+  const next=clone(state.people);delete next[ME].icalToken;await writePeople(next);await ensureIcalToken();toast("Neuer Link erzeugt.");
+});
+["calWhoSeg"].forEach(id=>$(id).addEventListener("change",()=>{renderCalList();refreshCal();}));
+$("calFix").addEventListener("change",()=>{renderCalList();refreshCal();});
+$("calYear").addEventListener("change",()=>{renderCalList();refreshCal();});
 /* Kollegen */
 function overlap(a,b){return a.start<=b.end&&b.start<=a.end?{start:a.start>b.start?a.start:b.start,end:a.end<b.end?a.end:b.end}:null;}
 function myTrips(){return state.trips.filter(t=>isPlan(t)&&t.status!=="storniert"&&t.who.indexOf(ME)>=0);}
