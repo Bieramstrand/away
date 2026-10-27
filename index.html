@@ -411,7 +411,7 @@ a.ghost{text-decoration:none;color:inherit;display:inline-flex;align-items:cente
     <div class="list" id="list"></div>
   </section>
   <p class="foot" id="sync"><span class="dot"></span>Verbindung wird aufgebaut</p>
-  <p class="foot ver">Away Version 4.0</p>
+  <p class="foot ver">Away Version 4.1</p>
 </div>
 
 <div class="dock"><button class="primary" id="addBtn">Eintragen</button></div>
@@ -1015,6 +1015,7 @@ function loadLocal(){try{const raw=localStorage.getItem(LSKEY);if(raw){const o=J
 function saveLocal(){try{localStorage.setItem(LSKEY,JSON.stringify({people:state.people,trips:state.trips,kollegen:state.kollegen,schliess:state.schliess}));}catch(e){}}
 const COL="household",KEYS={people:PREFIX+":people",trips:PREFIX+":trips",kollegen:PREFIX+":kollegen",schliess:PREFIX+":schliess",meta:PREFIX+":meta",team:"away_team:urlaub"};
 let teamSig="",teamKolSig="",teamLastRead=0;
+const teamDiag={wrote:0,items:0,err:"",rerr:"",found:null};
 let lastRev=null,lastFull=0;
 function bumpRev(){if(!db)return Promise.resolve();return ref("meta").set({rev:Date.now()+"_"+Math.random().toString(36).slice(2,7),updated:Date.now()}).catch(e=>console.error(e));}
 let pendingWrites=0,lastSig="";
@@ -1273,11 +1274,15 @@ function openSettings(){
       [["all","Alle Urlaube"],["approved","Nur beantragte und genehmigte"]].forEach(([v,l])=>{const lab=el("label");const i=document.createElement("input");i.type="radio";i.name=p+"_tmode";i.value=v;i.checked=mode===v;lab.append(i,el("span",null,l));seg.append(lab);});
       fs.append(seg);
       const c2=el("label","check");const i2=document.createElement("input");i2.type="checkbox";i2.name=p+"_tsee";i2.checked=teamSee();c2.append(i2);
-      const t2=el("span",null,"Urlaub verknüpfter Kollegen anzeigen");t2.append(el("small",null,"Erscheint unter Kollegen, mit Warnung bei Überschneidungen."+(teamNames().length?" Gerade verknüpft: "+teamNames().join(", ")+".":" Noch niemand verknüpft.")));c2.append(t2);fs.append(c2);
+      const t2=el("span",null,"Urlaub verknüpfter Kollegen anzeigen");t2.append(el("small",null,"Erscheint unter Kollegen, mit Warnung bei Überschneidungen."));c2.append(t2);fs.append(c2);
+      const st=el("div","preview");st.id="teamStatus";fs.append(st);
+      const rb=el("button","ghost","Jetzt abgleichen");rb.type="button";
+      rb.addEventListener("click",async()=>{rb.disabled=true;st.textContent="Gleiche ab …";try{if(teamShare())await syncTeamShare(true);await pollTeam(true);}finally{rb.disabled=false;renderTeamStatus();}});
+      fs.append(rb);renderTeamStatus();
     }
     box.append(fs);
   });
-  setDlg.showModal();
+  setDlg.showModal();renderTeamStatus();
 }
 setForm.addEventListener("submit",e=>{
   e.preventDefault();
@@ -1545,6 +1550,21 @@ function allKol(){
   const names=new Set(state.teamKol.map(k=>k.name.trim().toLowerCase()));
   return state.kollegen.filter(k=>!names.has(k.name.trim().toLowerCase())).concat(state.teamKol);
 }
+function hhmm(ms){const d=new Date(ms);return pad(d.getHours())+":"+pad(d.getMinutes());}
+function renderTeamStatus(){
+  const st=$("teamStatus");if(!st)return;const L=[];
+  if(!db)L.push("Ohne Firebase nicht verfügbar.");
+  else{
+    if(teamDiag.err)L.push("Teilen fehlgeschlagen: "+teamDiag.err);
+    else if(teamShare())L.push("Dein Urlaub wird geteilt"+(teamDiag.wrote?" ("+plural(teamDiag.items,"Zeitraum","Zeiträume")+", zuletzt um "+hhmm(teamDiag.wrote)+")":"")+".");
+    else L.push("Dein Urlaub wird nicht geteilt.");
+    if(!teamSee())L.push("Die Anzeige verknüpfter Kollegen ist ausgeschaltet.");
+    else if(teamDiag.rerr)L.push("Lesen fehlgeschlagen: "+teamDiag.rerr);
+    else if(teamDiag.found&&teamDiag.found.length)L.push("Gefunden: "+teamDiag.found.map(f=>f.name+" ("+plural(f.n,"Zeitraum","Zeiträume")+")").join(", ")+".");
+    else L.push("Noch niemand gefunden. Der Kollege muss das Teilen bei sich einschalten und Away Version 3.8 oder neuer haben.");
+  }
+  st.textContent=L.join("\n");st.style.whiteSpace="pre-line";
+}
 function teamNames(){return Array.from(new Set(state.teamKol.map(k=>k.name)));}
 function teamEntry(){
   const approvedOnly=state.people[ME].teamMode==="approved";
@@ -1568,8 +1588,8 @@ async function syncTeamShare(force){
       try{await ref("team").update(fp,firebase.firestore.FieldValue.delete(),"updated",Date.now());}
       catch(x){if(!x||x.code!=="not-found")throw x;}
     }
-    teamSig=sig;
-  }catch(x){console.error(x);}
+    teamSig=sig;teamDiag.err="";teamDiag.wrote=Date.now();teamDiag.items=on?e.items.length:0;renderTeamStatus();
+  }catch(x){console.error(x);const m=String((x&&(x.code||x.message))||x);if(m!==teamDiag.err)toast("Teilen fehlgeschlagen: "+m);teamDiag.err=m;renderTeamStatus();}
 }
 async function pollTeam(force){
   if(!db)return;
@@ -1584,9 +1604,12 @@ async function pollTeam(force){
       if(!o||typeof o.name!=="string"||!o.name.trim()||!Array.isArray(o.items))return;
       o.items.forEach((it,i)=>{if(it&&re.test(it.s||"")&&re.test(it.e||""))out.push({id:"team:"+key+":"+i,name:o.name.trim().slice(0,60),start:it.s,end:it.e,note:"",status:it.st||"geplant",linked:true});});
     });
+    const cnt={};out.forEach(k=>{cnt[k.name]=(cnt[k.name]||0)+1;});
+    teamDiag.found=Object.keys(cnt).map(n=>({name:n,n:cnt[n]}));teamDiag.rerr="";
     const sig=JSON.stringify(out);
     if(sig!==teamKolSig){teamKolSig=sig;state.teamKol=out;render();}
-  }catch(e){console.error(e);}
+    renderTeamStatus();
+  }catch(e){console.error(e);teamDiag.rerr=String((e&&(e.code||e.message))||e);renderTeamStatus();}
 }
 function renderKol(y){
   const ban=$("kolBanner"),list=$("kolList");ban.textContent="";list.textContent="";
