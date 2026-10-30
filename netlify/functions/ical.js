@@ -72,7 +72,7 @@ exports.handler = async (event) => {
       if (fixOnly && t.status !== "beantragt" && t.status !== "genehmigt") return;
       const st = t.status || "geplant";
       const nm = who === "beide" ? " " + t.who.map((p) => names[p] || p).join(" und ") : "";
-      const summary = (type === "bildung" ? "Bildungsurlaub" : "Urlaub") + nm + (t.title ? ": " + t.title : "") + (st === "genehmigt" ? "" : " (" + st + ")");
+      const summary = (type === "bildung" ? "Bildungsurlaub" : t.sonder ? (me.extraName || "Sonderurlaub") : "Urlaub") + nm + (t.title ? ": " + t.title : "") + (st === "genehmigt" ? "" : " (" + st + ")");
       L.push("BEGIN:VEVENT", "UID:away-" + prefix + "-" + id + "@bieramstrand", "DTSTAMP:" + stamp,
         "DTSTART;VALUE=DATE:" + day(t.start), "DTEND;VALUE=DATE:" + nextDay(t.end),
         "SUMMARY:" + esc(summary), "DESCRIPTION:" + esc("Status: " + st + ". Eingetragen mit Away."),
