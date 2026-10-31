@@ -415,7 +415,7 @@ a.ghost{text-decoration:none;color:inherit;display:inline-flex;align-items:cente
     <div class="list" id="list"></div>
   </section>
   <p class="foot" id="sync"><span class="dot"></span>Verbindung wird aufgebaut</p>
-  <p class="foot ver">Away Version 4.3</p>
+  <p class="foot ver">Away Version 4.5</p>
 </div>
 
 <div class="dock"><button class="primary" id="addBtn">Eintragen</button></div>
@@ -769,7 +769,7 @@ function account(p,y){
   const cfg=yearCfg(p,y),total=cfg.anspruch+cfg.extra+cfg.uebertrag;let ok=0,pl=0,sonder=0;
   state.trips.forEach(t=>{if(typeOf(t)!=="urlaub")return;const n=tripDays(t,p,y);if(t.sonder&&cfg.extra>0)sonder+=n;if(t.status==="genehmigt")ok+=n;else pl+=n;});
   const normal=ok+pl-sonder;
-  return{cfg:cfg,total:total,ok:ok,pl:pl,sonder:sonder,normal:normal,rest:total-ok-pl,restNormal:cfg.anspruch+cfg.uebertrag-normal,restSonder:cfg.extra-sonder};
+  return{cfg:cfg,total:total,ok:ok,pl:pl,sonder:sonder,split:sonder>0,normal:normal,rest:total-ok-pl,restNormal:cfg.anspruch+cfg.uebertrag-normal,restSonder:cfg.extra-sonder};
 }
 function kindDefault(p,y){const n=Math.max(0,Number(state.people[p].kinder)||0);if(!n)return 0;const hi=y>=2024&&y<=2026;return Math.min((hi?15:10)*n,hi?35:25);}
 function kindAnspruch(p,y){const ys=state.people[p].years||{};const v=ys[y]&&ys[y].kind;return v==null||v===""?kindDefault(p,y):Number(v)||0;}
@@ -846,7 +846,7 @@ function renderPeople(y){
     c.append(el("div","name",nm(p)));
     c.append(el("div","big"+(rest<0?" neg":""),String(rest)));
     c.append(el("div","sub",(rest===1||rest===-1?"Tag":"Tage")+" übrig von "+total));
-    const parts=cfg.extra>0?["Übrig: Urlaub "+A.restNormal+" von "+(cfg.anspruch+cfg.uebertrag),extraLabel(p)+" "+A.restSonder+" von "+cfg.extra]:[cfg.anspruch+" Urlaub"];if(cfg.uebertrag)parts.push("davon "+cfg.uebertrag+" Übertrag");
+    const parts=(cfg.extra>0&&A.split)?["Übrig: Urlaub "+A.restNormal+" von "+(cfg.anspruch+cfg.uebertrag),extraLabel(p)+" "+A.restSonder+" von "+cfg.extra]:[cfg.anspruch+" Urlaub"].concat(cfg.extra>0?[cfg.extra+" "+extraLabel(p)]:[]);if(cfg.uebertrag)parts.push("davon "+cfg.uebertrag+" Übertrag");
     c.append(el("div","sub small",parts.join(", ")));
     const bar=el("div","bar");
     const w=v=>total>0?Math.max(0,Math.min(100,v/total*100)):0;
@@ -1363,7 +1363,7 @@ function exportText(sel){
     u.forEach(sg=>out.push(line(sg)));
     const bu=segs(p,"bildung");
     if(bu.length){out.push("","Bildungsurlaub:","");bu.forEach(sg=>out.push(line(sg)));}
-    if(a.cfg.extra>0){
+    if(a.cfg.extra>0&&a.split){
       const base=a.cfg.anspruch+a.cfg.uebertrag,lb=extraLabel(p);
       out.push("","Verplant: "+plural(a.normal,"Tag","Tage")+" Urlaub und "+plural(a.sonder,"Tag","Tage")+" "+lb);
       out.push(a.restNormal<0?"Zu viel verplant: "+plural(-a.restNormal,"Tag","Tage")+" Urlaub (von "+base+")":"Resturlaub: "+plural(a.restNormal,"Tag","Tage")+" nicht verplant (von "+base+")");
@@ -1401,6 +1401,10 @@ function antragText(){
   const L=["Moin liebe Urlaubskommission,","","Für "+y+" würde ich gerne wie folgt Urlaub einreichen:"];
   const sl=t=>t.sonder&&yearCfg(ME,y).extra>0?extraLabel(ME):"Urlaub";
   ts.forEach((t,i)=>L.push((i+1)+". "+sl(t)+": "+dmy(parse(t.start))+" - "+dmy(parse(t.end))+" - "+plural(antragDays(t,y),"Tag","Tage")));
+  {const a=account(ME,y),c=a.cfg,base=c.anspruch+c.uebertrag,lb=extraLabel(ME);
+    const rest=(n,b,lab)=>n<0?"Zu viel verplant: "+plural(-n,"Tag","Tage")+(lab?" "+lab:"")+" (von "+b+")":"Noch übrig: "+plural(n,"Tag","Tage")+(lab?" "+lab:"")+" (von "+b+")";
+    if(c.extra>0&&a.split){L.push("","Verplant: "+plural(a.normal,"Tag","Tage")+" Urlaub und "+plural(a.sonder,"Tag","Tage")+" "+lb,rest(a.restNormal,base,"Urlaub"),rest(a.restSonder,c.extra,lb));}
+    else L.push("","Verplant: "+plural(a.ok+a.pl,"Tag","Tage"),rest(a.rest,a.total,""));}
   const rto=$("antRto").value.trim();if(rto)L.push("","RTO Wünsche: "+rto);
   const asp=$("antAsp").value.trim();
   if(asp){L.push("","Folgende Aspekte sind bei meiner Urlaubsplanung zu beachten:");asp.split(/\n+/).forEach(a=>{a=a.replace(/^[-•]\s*/,"").trim();if(a)L.push("- "+a);});}
@@ -1410,9 +1414,9 @@ function antragText(){
 function refreshAntrag(){
   const y=antYear(),ts=antTrips(y).filter(antOn),C=$("antCheck");C.textContent="";
   const line=(cls,t)=>C.append(el("span",cls,t));
-  const cfg=yearCfg(ME,y),isS=t=>t.sonder&&cfg.extra>0,days=t=>antragDays(t,y);
-  const sum=ts.filter(t=>!isS(t)).reduce((a,t)=>a+days(t),0),tg=ts.filter(isS).reduce((a,t)=>a+days(t),0),tot=cfg.anspruch+cfg.uebertrag,lb=extraLabel(ME);
-  line("",cfg.extra>0?"Ausgewählt: "+plural(sum,"Tag","Tage")+" Urlaub und "+plural(tg,"Tag","Tage")+" "+lb+" (Anspruch "+tot+" Urlaub und "+cfg.extra+" "+lb+") "+y+". Eine volle Woche Mo bis So zählt als 5 Tage.":"Ausgewählt: "+plural(sum,"Tag","Tage")+" von "+tot+" Tagen Anspruch "+y+". Eine volle Woche Mo bis So zählt als 5 Tage.");
+  const cfg=yearCfg(ME,y),A=account(ME,y),isS=t=>t.sonder&&cfg.extra>0,days=t=>antragDays(t,y);
+  const sum=ts.filter(t=>!isS(t)).reduce((a,t)=>a+days(t),0),tg=ts.filter(isS).reduce((a,t)=>a+days(t),0),tot=cfg.anspruch+cfg.uebertrag+(A.split?0:cfg.extra),lb=extraLabel(ME);
+  line("",(cfg.extra>0&&A.split)?"Ausgewählt: "+plural(sum,"Tag","Tage")+" Urlaub und "+plural(tg,"Tag","Tage")+" "+lb+" (Anspruch "+tot+" Urlaub und "+cfg.extra+" "+lb+") "+y+". Eine volle Woche Mo bis So zählt als 5 Tage.":"Ausgewählt: "+plural(sum,"Tag","Tage")+" von "+tot+" Tagen Anspruch "+y+". Eine volle Woche Mo bis So zählt als 5 Tage.");
   if(sum<25)line("bad","Laut BV Urlaub müssen mindestens 25 Tage im Jahr genommen werden, es fehlen noch "+(25-sum)+"."+(tg>0?" "+lb+" zählt dabei nicht mit.":""));
   else if(sum<30)line("warn","Empfehlung: 30 Tage verplanen, damit deine Wunschtermine bestmöglich gesichert sind.");
   else line("ok","Mindestens 25 Tage und Empfehlung von 30 Tagen erfüllt.");
