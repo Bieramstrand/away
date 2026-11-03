@@ -149,6 +149,9 @@ h2{font-family:"Fraunces",Georgia,serif;font-weight:400;font-size:1.5rem;margin:
 .month{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 12px 10px}
 .month h3{margin:0 0 6px;font-size:.95rem;font-weight:600}
 .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.grid.kwon{grid-template-columns:20px repeat(7,1fr)}
+.kw{display:flex;align-items:center;justify-content:center;font-size:.58rem;color:var(--muted);opacity:.75;font-variant-numeric:tabular-nums}
+.wd.kwh{font-size:.55rem;letter-spacing:.02em}
 .wd{font-size:.68rem;color:var(--muted);text-align:center;padding-bottom:2px}
 .day{aspect-ratio:1;border:0;border-radius:6px;background:transparent;font-size:.74rem;padding:0;position:relative;color:var(--ink);font-variant-numeric:tabular-nums}
 .day:hover{background:var(--we)}
@@ -415,7 +418,7 @@ a.ghost{text-decoration:none;color:inherit;display:inline-flex;align-items:cente
     <div class="list" id="list"></div>
   </section>
   <p class="foot" id="sync"><span class="dot"></span>Verbindung wird aufgebaut</p>
-  <p class="foot ver">Away Version 4.5</p>
+  <p class="foot ver">Away Version 4.6</p>
 </div>
 
 <div class="dock"><button class="primary" id="addBtn">Eintragen</button></div>
@@ -709,7 +712,7 @@ const typeOf=t=>["krank","kindkrank","bildung"].indexOf(t.type)>=0?t.type:"urlau
 const isPlan=t=>{const x=typeOf(t);return x==="urlaub"||x==="bildung";};
 
 let db=null;
-const state={year:new Date().getFullYear(),people:clone(DEFAULTS),trips:[],kollegen:[],schliess:[],teamKol:[],mode:"loading",bvIdx:null};
+const state={year:new Date().getFullYear(),people:clone(DEFAULTS),trips:[],kollegen:[],schliess:[],teamKol:[],sharedKol:[],mode:"loading",bvIdx:null};
 const ME="christian";
 let auSet={christian:new Set(),julia:new Set()};
 
@@ -906,6 +909,7 @@ const SCHOOL={
   SH:[["2025-12-19","2026-01-06","Weihnachtsferien"],["2026-03-26","2026-04-10","Osterferien"],["2026-05-15","2026-05-15","Ferientag Himmelfahrt"],["2026-07-04","2026-08-14","Sommerferien"],["2026-10-12","2026-10-24","Herbstferien"],["2026-12-21","2027-01-06","Weihnachtsferien"],["2027-03-30","2027-04-10","Osterferien"],["2027-05-07","2027-05-07","Ferientag Himmelfahrt"],["2027-07-03","2027-08-14","Sommerferien"],["2027-10-11","2027-10-23","Herbstferien"],["2027-12-23","2028-01-08","Weihnachtsferien"],["2028-04-03","2028-04-15","Osterferien"],["2028-05-26","2028-05-26","Ferientag Himmelfahrt"],["2028-06-24","2028-08-04","Sommerferien"],["2028-10-16","2028-10-30","Herbstferien"],["2028-12-21","2029-01-05","Weihnachtsferien"],["2029-03-23","2029-04-06","Osterferien"],["2029-05-11","2029-05-11","Ferientag Himmelfahrt"],["2029-06-23","2029-08-03","Sommerferien"]]
 };
 const SCHOOL_NAME={HH:"Hamburg",SH:"Schleswig Holstein"},SCHOOL_SHORT={HH:"HH",SH:"SH"};
+let kwOn=(()=>{try{return localStorage.getItem("away:kw")!=="0";}catch(e){return true;}})();
 let ferienOn=(()=>{try{const v=localStorage.getItem("away:ferien");return v==null?["HH","SH"]:v.split(",").filter(x=>SCHOOL[x]);}catch(e){return["HH","SH"];}})();
 function ferienAt(k){const out=[];ferienOn.forEach(l=>SCHOOL[l].forEach(f=>{if(k>=f[0]&&k<=f[1])out.push({l:l,n:f[2]});}));return out;}
 function ferienIn(s,e){const out=[];ferienOn.forEach(l=>SCHOOL[l].forEach(f=>{if(f[0]<=e&&f[1]>=s)out.push(f[2]+" "+SCHOOL_SHORT[l]);}));return out;}
@@ -916,6 +920,7 @@ function renderFerbar(y){
   {const x=el("button",null,"Kita & Schule");x.type="button";x.setAttribute("aria-pressed",schliessOn?"true":"false");
    x.addEventListener("click",()=>{schliessOn=!schliessOn;try{localStorage.setItem("away:schliess",schliessOn?"1":"0");}catch(e){}render();});b.append(x);
    const m=el("button","ferlink","Schließtage ›");m.type="button";m.addEventListener("click",openSchliess);b.append(m);}
+  {const x=el("button",null,"KW");x.type="button";x.setAttribute("aria-pressed",kwOn?"true":"false");x.addEventListener("click",()=>{kwOn=!kwOn;try{localStorage.setItem("away:kw",kwOn?"1":"0");}catch(e){}render();});b.append(x);}
   if(ferienOn.length&&y>2029)b.append(el("small",null,"Schulferien sind bis Sommer 2029 hinterlegt."));
 }
 let schliessOn=(()=>{try{return localStorage.getItem("away:schliess")!=="0";}catch(e){return true;}})();
@@ -949,11 +954,14 @@ function renderMonths(y){
   for(let mo=0;mo<12;mo++){
     const card=el("div","month");card.append(el("h3",null,MONTHS[mo]));
     const g=el("div","grid");
+    if(kwOn){g.classList.add("kwon");g.append(el("div","wd kwh","KW"));}
     ["M","D","M","D","F","S","S"].forEach(x=>g.append(el("div","wd",x)));
     const lead=(new Date(y,mo,1).getDay()+6)%7;
+    if(kwOn&&lead>0)g.append(el("div","kw",String(isoWeek(new Date(y,mo,1)))));
     for(let i=0;i<lead;i++)g.append(el("div"));
     const dim=new Date(y,mo+1,0).getDate();
     for(let d=1;d<=dim;d++){
+      if(kwOn&&(lead+d-1)%7===0)g.append(el("div","kw",String(isoWeek(new Date(y,mo,d)))));
       const dt=new Date(y,mo,d),k=iso(dt);
       const b=el("button","day",String(d));b.type="button";b.dataset.d=k;
       const dow=dt.getDay();if(dow===0||dow===6)b.classList.add("we");
@@ -1025,9 +1033,9 @@ let toastT;function toast(msg){const t=$("toast");t.textContent=msg;t.classList.
 /* Speicher */
 function loadLocal(){try{const raw=localStorage.getItem(LSKEY);if(raw){const o=JSON.parse(raw);PEOPLE.forEach(p=>{if(o.people&&o.people[p])state.people[p]=Object.assign(clone(DEFAULTS[p]),o.people[p]);});if(Array.isArray(o.trips))state.trips=o.trips.filter(validTrip);if(Array.isArray(o.kollegen))state.kollegen=o.kollegen.filter(validKol);if(Array.isArray(o.schliess))state.schliess=o.schliess.filter(validKol);}}catch(e){}}
 function saveLocal(){try{localStorage.setItem(LSKEY,JSON.stringify({people:state.people,trips:state.trips,kollegen:state.kollegen,schliess:state.schliess}));}catch(e){}}
-const COL="household",KEYS={people:PREFIX+":people",trips:PREFIX+":trips",kollegen:PREFIX+":kollegen",schliess:PREFIX+":schliess",meta:PREFIX+":meta",team:"away_team:urlaub"};
+const COL="household",KEYS={people:PREFIX+":people",trips:PREFIX+":trips",kollegen:PREFIX+":kollegen",schliess:PREFIX+":schliess",meta:PREFIX+":meta",team:"away_team:urlaub",teamKol:"away_team:kollegen"};
 let teamSig="",teamKolSig="",teamLastRead=0;
-const teamDiag={wrote:0,items:0,err:"",rerr:"",found:null};
+const teamDiag={wrote:0,items:0,err:"",rerr:"",found:null,shared:null};
 let lastRev=null,lastFull=0;
 function bumpRev(){if(!db)return Promise.resolve();return ref("meta").set({rev:Date.now()+"_"+Math.random().toString(36).slice(2,7),updated:Date.now()}).catch(e=>console.error(e));}
 let pendingWrites=0,lastSig="";
@@ -1296,6 +1304,9 @@ function openSettings(){
       fs.append(seg);
       const c2=el("label","check");const i2=document.createElement("input");i2.type="checkbox";i2.name=p+"_tsee";i2.checked=teamSee();c2.append(i2);
       const t2=el("span",null,"Urlaub verknüpfter Kollegen anzeigen");t2.append(el("small",null,"Erscheint unter Kollegen, mit Warnung bei Überschneidungen."));c2.append(t2);fs.append(c2);
+      const c3=el("label","check");const i3=document.createElement("input");i3.type="checkbox";i3.name=p+"_tsharekol";i3.checked=!!P.teamShareKol;c3.append(i3);
+      const t3=el("span",null,"Importierte Kollegen mit anderen teilen");t3.append(el("small",null,"Neu eingetragene oder importierte Kollegen, zum Beispiel Marcel, sehen dann alle verknüpften Nutzer. Alle können sie ändern oder löschen."));c3.append(t3);fs.append(c3);
+      const sb=el("button","ghost","Vorhandene Kollegen jetzt teilen");sb.type="button";sb.addEventListener("click",shareExistingKol);fs.append(sb);
       const st=el("div","preview");st.id="teamStatus";fs.append(st);
       const rb=el("button","ghost","Jetzt abgleichen");rb.type="button";
       rb.addEventListener("click",async()=>{rb.disabled=true;st.textContent="Gleiche ab …";try{if(teamShare())await syncTeamShare(true);await pollTeam(true);}finally{rb.disabled=false;renderTeamStatus();}});
@@ -1321,7 +1332,7 @@ setForm.addEventListener("submit",e=>{
     next[p].kinder=Math.round(n(f("kinder").value,0));
     next[p].kindPaid=n(f("kindPaid").value,0);
     next[p].bildungBase=n(f("bildungBase").value,0);
-    if(p===ME){next[p].teamShare=f("tshare").checked;next[p].teamSee=f("tsee").checked;const m=setForm.querySelector('input[name="'+p+'_tmode"]:checked');next[p].teamMode=m&&m.value==="approved"?"approved":"all";}
+    if(p===ME){next[p].teamShare=f("tshare").checked;next[p].teamShareKol=f("tsharekol").checked;next[p].teamSee=f("tsee").checked;const m=setForm.querySelector('input[name="'+p+'_tmode"]:checked');next[p].teamMode=m&&m.value==="approved"?"approved":"all";}
     next[p].years=next[p].years||{};
     const kindVal=n(f("kind").value,0),kindDef=(()=>{const save=state.people[p].kinder;state.people[p].kinder=next[p].kinder;const v=kindDefault(p,Number(y));state.people[p].kinder=save;return v;})();
     const yr={anspruch:n(f("anspruch").value,0),extra:n(f("extra").value,0),uebertrag:n(f("uebertrag").value,0)};
@@ -1588,10 +1599,12 @@ function kolColor(name){
 function kolNameList(){return Array.from(new Set(allKol().map(k=>k.name.trim()))).sort((a,b)=>a.localeCompare(b,"de"));}
 function teamSee(){return state.people[ME].teamSee!==false;}
 function teamShare(){return !!state.people[ME].teamShare;}
+const kkey=k=>k.name.trim().toLowerCase()+"|"+k.start+"|"+k.end;
 function allKol(){
-  if(!state.teamKol.length||!teamSee())return state.kollegen;
+  if(!teamSee())return state.kollegen;
   const names=new Set(state.teamKol.map(k=>k.name.trim().toLowerCase()));
-  return state.kollegen.filter(k=>!names.has(k.name.trim().toLowerCase())).concat(state.teamKol);
+  const sk=state.sharedKol.filter(k=>!names.has(k.name.trim().toLowerCase())),keys=new Set(sk.map(kkey));
+  return state.kollegen.filter(k=>!names.has(k.name.trim().toLowerCase())&&!keys.has(kkey(k))).concat(sk,state.teamKol);
 }
 function hhmm(ms){const d=new Date(ms);return pad(d.getHours())+":"+pad(d.getMinutes());}
 function renderTeamStatus(){
@@ -1605,6 +1618,7 @@ function renderTeamStatus(){
     else if(teamDiag.rerr)L.push("Lesen fehlgeschlagen: "+teamDiag.rerr);
     else if(teamDiag.found&&teamDiag.found.length)L.push("Gefunden: "+teamDiag.found.map(f=>f.name+" ("+plural(f.n,"Zeitraum","Zeiträume")+")").join(", ")+".");
     else L.push("Noch niemand gefunden. Der Kollege muss das Teilen bei sich einschalten und Away Version 3.8 oder neuer haben.");
+    if(teamSee()&&!teamDiag.rerr)L.push(teamDiag.shared&&teamDiag.shared.length?"Geteilte Kollegen: "+teamDiag.shared.map(f=>f.name+" ("+plural(f.n,"Zeitraum","Zeiträume")+")").join(", ")+".":"Geteilte Kollegen: keine.");
   }
   st.textContent=L.join("\n");st.style.whiteSpace="pre-line";
 }
@@ -1637,20 +1651,24 @@ async function syncTeamShare(force){
 async function pollTeam(force){
   if(!db)return;
   if(!force&&Date.now()-teamLastRead<28000)return;
-  if(!teamSee()){if(state.teamKol.length){state.teamKol=[];teamKolSig="";render();}return;}
+  if(!teamSee()){if(state.teamKol.length||state.sharedKol.length){state.teamKol=[];state.sharedKol=[];teamKolSig="";render();}return;}
   teamLastRead=Date.now();
   try{
     const snap=await ref("team").get({source:"server"});
+    const snap2=await ref("teamKol").get({source:"server"}).catch(e=>{console.error(e);return null;});
     const v=snap.exists?parseValue((snap.data()||{}).value):null,out=[],re=/^\d{4}-\d{2}-\d{2}$/;
     if(v&&typeof v==="object")Object.keys(v).forEach(key=>{
       if(key===PREFIX)return;const o=v[key];
       if(!o||typeof o.name!=="string"||!o.name.trim()||!Array.isArray(o.items))return;
       o.items.forEach((it,i)=>{if(it&&re.test(it.s||"")&&re.test(it.e||""))out.push({id:"team:"+key+":"+i,name:o.name.trim().slice(0,60),start:it.s,end:it.e,note:"",status:it.st||"geplant",linked:true});});
     });
-    const cnt={};out.forEach(k=>{cnt[k.name]=(cnt[k.name]||0)+1;});
-    teamDiag.found=Object.keys(cnt).map(n=>({name:n,n:cnt[n]}));teamDiag.rerr="";
-    const sig=JSON.stringify(out);
-    if(sig!==teamKolSig){teamKolSig=sig;state.teamKol=out;render();}
+    const v2=snap2&&snap2.exists?parseValue((snap2.data()||{}).value):null,shared=[];
+    if(v2&&typeof v2==="object")Object.keys(v2).forEach(id=>{const o=v2[id];if(o&&typeof o.name==="string"&&o.name.trim()&&re.test(o.start||"")&&re.test(o.end||""))shared.push({id:id,name:o.name.trim().slice(0,60),start:o.start,end:o.end,note:String(o.note||"").slice(0,200),shared:true});});
+    shared.sort((a,b)=>a.start<b.start?-1:a.start>b.start?1:0);
+    const count=arr=>{const c={};arr.forEach(k=>{c[k.name]=(c[k.name]||0)+1;});return Object.keys(c).map(n=>({name:n,n:c[n]}));};
+    teamDiag.found=count(out);teamDiag.shared=count(shared);teamDiag.rerr="";
+    const sig=JSON.stringify([out,shared]);
+    if(sig!==teamKolSig){teamKolSig=sig;state.teamKol=out;state.sharedKol=shared;render();}
     renderTeamStatus();
   }catch(e){console.error(e);teamDiag.rerr=String((e&&(e.code||e.message))||e);renderTeamStatus();}
 }
@@ -1677,7 +1695,7 @@ function renderKol(y){
     const total=g.items.reduce((a,k)=>a+wd(k),0);
     const next=g.items.find(k=>k.end>=todayIso);
     {const tt=el("div","t");const dot=el("span","kdot");dot.style.setProperty("--kc",kolColor(g.name));tt.append(dot,document.createTextNode(g.name));sum.append(tt);}
-    sum.append(el("div","d",(g.items.some(k=>k.linked)?"verknüpft, ":"")+plural(g.items.length,"Zeitraum","Zeiträume")+", "+plural(total,"Tag","Tage")+(next?", nächster: "+fmtRange(next.start,next.end):"")));
+    sum.append(el("div","d",(g.items.some(k=>k.linked)?"verknüpft, ":g.items.some(k=>k.shared)?"geteilt, ":"")+plural(g.items.length,"Zeitraum","Zeiträume")+", "+plural(total,"Tag","Tage")+(next?", nächster: "+fmtRange(next.start,next.end):"")));
     if(clash.length)sum.append(el("span","pill bad",plural(clash.length,"Überschneidung","Überschneidungen")));
     sum.append(el("span","chev","›"));
     det.append(sum);
@@ -1692,8 +1710,37 @@ function renderKol(y){
   });
 }
 const kolOpen=new Set();
-function writeKol(k){return save("kollegen",k.id,{name:k.name,start:k.start,end:k.end,note:k.note||"",updated:Date.now()});}
-function removeKol(id){return save("kollegen",id,null);}
+async function writeSharedKol(id,body,skipPoll){
+  if(!db)return false;
+  try{await putEntryRaw("teamKol",id,body);}catch(e){dbFail(e);return false;}
+  if(!skipPoll)await pollTeam(true);
+  return true;
+}
+function writeKol(k,skipPoll){
+  const body={name:k.name,start:k.start,end:k.end,note:k.note||"",updated:Date.now()};
+  const priv=state.kollegen.some(x=>x.id===k.id);
+  if(db&&(k.shared||(!priv&&state.people[ME].teamShareKol)))return writeSharedKol(k.id,Object.assign(body,{by:PREFIX}),skipPoll);
+  return save("kollegen",k.id,body);
+}
+function removeKol(id){
+  if(db&&state.sharedKol.some(x=>x.id===id))return writeSharedKol(id,null);
+  return save("kollegen",id,null);
+}
+async function shareExistingKol(){
+  if(!db){toast("Nur mit Firebase möglich.");return;}
+  const items=state.kollegen.slice();
+  if(!items.length){toast("Du hast keine eigenen Kollegen eingetragen.");return;}
+  if(!confirm(plural(items.length,"Eintrag","Einträge")+" mit allen verknüpften Nutzern teilen? Sie sehen die Einträge danach auch bei sich."))return;
+  let n=0;
+  for(const k of items){
+    if(!state.sharedKol.some(x=>kkey(x)===kkey(k))){
+      const ok=await writeSharedKol(k.id,{name:k.name,start:k.start,end:k.end,note:k.note||"",by:PREFIX,updated:Date.now()},true);
+      if(!ok)return;
+    }
+    await save("kollegen",k.id,null);n++;
+  }
+  await pollTeam(true);toast(plural(n,"Eintrag","Einträge")+" geteilt.");renderTeamStatus();
+}
 const kolDlg=$("kolDlg"),kolForm=$("kolForm");let kolEditing=null;
 function kolRange(){let s=kolForm.start.value,e=kolForm.end.value;if(!s||!e)return null;if(e<s){const x=s;s=e;e=x;}return{start:s,end:e};}
 function kolPreview(){
@@ -1718,7 +1765,7 @@ kolForm.addEventListener("submit",e=>{
   e.preventDefault();const r=kolRange(),name=kolForm.name.value.trim();
   if(!r||!name){toast("Bitte Name und Zeitraum angeben.");return;}
   kolDlg.close();
-  writeKol({id:kolEditing?kolEditing.id:newId(),name:name.slice(0,60),start:r.start,end:r.end,note:kolForm.note.value.trim()});
+  writeKol({id:kolEditing?kolEditing.id:newId(),shared:!!(kolEditing&&kolEditing.shared),name:name.slice(0,60),start:r.start,end:r.end,note:kolForm.note.value.trim()});
   toast("Gespeichert.");
 });
 $("kolCancel").addEventListener("click",()=>kolDlg.close());
@@ -1791,7 +1838,7 @@ $("impRead").addEventListener("click",async()=>{
     impRows=res.filter(x=>x&&typeof x.name==="string"&&x.name.trim()&&re.test(x.start||"")&&re.test(x.end||x.start||"")).map(x=>{
       let s=x.start,e=x.end||x.start;if(e<s){const t=s;s=e;e=t;}
       const name=x.name.trim().slice(0,60);
-      const dup=state.kollegen.some(k=>k.name.toLowerCase()===name.toLowerCase()&&k.start===s&&k.end===e);
+      const dup=allKol().some(k=>k.name.toLowerCase()===name.toLowerCase()&&k.start===s&&k.end===e);
       return{name:name,start:s,end:e,on:!dup,dup:dup};
     });
     renderRev();
@@ -1803,8 +1850,8 @@ $("impSave").addEventListener("click",async()=>{
   const rows=impRows.filter(r=>r.on&&r.name.trim()&&r.start&&r.end);
   $("impSave").disabled=true;
   let n=0;
-  for(const r of rows){let s=r.start,e=r.end;if(e<s){const t=s;s=e;e=t;}if(await writeKol({id:newId(),name:r.name.trim().slice(0,60),start:s,end:e,note:""}))n++;}
-  impDlg.close();toast(plural(n,"Urlaub","Urlaube")+" übernommen.");
+  for(const r of rows){let s=r.start,e=r.end;if(e<s){const t=s;s=e;e=t;}if(await writeKol({id:newId(),name:r.name.trim().slice(0,60),start:s,end:e,note:""},true))n++;}
+  await pollTeam(true);impDlg.close();toast(plural(n,"Urlaub","Urlaube")+" übernommen.");
 });
 $("impClose").addEventListener("click",()=>{if(impCtl)impCtl.abort();impDlg.close();});
 
