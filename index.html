@@ -418,7 +418,7 @@ a.ghost{text-decoration:none;color:inherit;display:inline-flex;align-items:cente
     <div class="list" id="list"></div>
   </section>
   <p class="foot" id="sync"><span class="dot"></span>Verbindung wird aufgebaut</p>
-  <p class="foot ver">Away Version 4.6</p>
+  <p class="foot ver">Away Version 4.7</p>
 </div>
 
 <div class="dock"><button class="primary" id="addBtn">Eintragen</button></div>
@@ -2100,6 +2100,14 @@ function paintDates(){document.querySelectorAll(".datebox").forEach(b=>{const v=
 enhanceDates();
 document.addEventListener("input",e=>{if(e.target.type==="date")paintDates();});
 document.addEventListener("change",e=>{if(e.target.type==="date")paintDates();});
+let scrollLockY=null;
+function syncScrollLock(){
+  const any=!!document.querySelector("dialog[open]"),b=document.body;
+  if(any&&scrollLockY===null){scrollLockY=window.scrollY||document.documentElement.scrollTop||0;b.style.position="fixed";b.style.top=(-scrollLockY)+"px";b.style.left="0";b.style.right="0";b.style.width="100%";}
+  else if(!any&&scrollLockY!==null){const y=scrollLockY;scrollLockY=null;b.style.position="";b.style.top="";b.style.left="";b.style.right="";b.style.width="";window.scrollTo(0,y);}
+}
+const lockObs=new MutationObserver(syncScrollLock);
+document.querySelectorAll("dialog").forEach(d=>lockObs.observe(d,{attributes:true,attributeFilter:["open"]}));
 const dlgObs=new MutationObserver(()=>paintDates());
 document.querySelectorAll("dialog").forEach(d=>dlgObs.observe(d,{attributes:true,attributeFilter:["open"]}));
 
